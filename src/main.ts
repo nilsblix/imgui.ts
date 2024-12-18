@@ -422,7 +422,7 @@ class DraggableFloat implements Widget {
     this.label.bbox.left = labelLeft;
     this.label.bbox.right = labelLeft + label_width;
     this.label.bbox.top = labelTop;
-    this.label.bbox.bottom = labelTop + 0.5*this.style.text_size;
+    this.label.bbox.bottom = labelTop + 0.5 * this.style.text_size;
 
     this.state = DraggableFloatState.default;
   }
