@@ -1,6 +1,12 @@
-import { Label } from "./label.ts";
-import { Layout } from "./layout.ts";
-import { Button } from "./button.ts";
+// NOTES:
+// layering of layouts. FUCK. indices of persistent states will be FUCKED.
+//  ==> Maybe other persistent array of index mapping? still FUCKED
+// More widgets :)
+// And even more widgets :)
+// NEW NOTES
+// * fix clearing of active widget when spawning new layout (window)
+// * more sophisticated popup handling. maybe internal handling of its states.
+// * color widget. vector4 with popups and everything twin
 import { Stack } from "./stack.ts";
 
 const canvas = document.createElement("canvas");
@@ -114,7 +120,10 @@ export type Widget<ActionType> = {
   loc: WidgetLoc;
   widgets: Widget<ActionType>[];
   render: (c: REND) => void;
-  requestAction: (input_state: InputState) => N<ActionType>;
+  requestAction: (input_state: InputState) => {
+    wants_focus: boolean;
+    action: N<ActionType>;
+  };
 };
 
 export class GlobalStyle {
@@ -143,10 +152,18 @@ export class GlobalStyle {
     bg_color: "#294A7AFF",
     font_size: 16,
   };
+  static popup = {
+    padding: 5,
+    widget_gap: 5,
+    bg_color: MColor.fromHex("#0F0F0FF0"),
+    border: "#6E6E8080",
+  }
 }
 
 export class InputState {
   mouse_position: Cursor;
+  mouse_prev_position: Cursor;
+  mouse_delta_pos: Cursor;
   mouse_down_position: Cursor;
   mouse_down: boolean;
   mouse_frame: {
@@ -158,12 +175,15 @@ export class InputState {
 
   window_offsets: Cursor[];
   window_positions: Cursor[];
+  window_order: number[];
 
   active_widget_loc: number[];
 
   constructor(canvas: HTMLCanvasElement, x: number, y: number) {
     this.mouse_position = { x, y };
+    this.mouse_prev_position = { x, y };
     this.mouse_down_position = { x, y };
+    this.mouse_delta_pos = { x, y };
     this.mouse_down = false;
     this.mouse_frame = {
       clicked: false,
@@ -173,6 +193,7 @@ export class InputState {
     this.moving_window = false;
     this.window_offsets = [];
     this.window_positions = [];
+    this.window_order = [];
     this.active_widget_loc = [];
 
     canvas.addEventListener("mousemove", (e) => {
@@ -200,6 +221,10 @@ export class InputState {
   }
 
   end() {
+    this.mouse_delta_pos.x = this.mouse_position.x - this.mouse_prev_position.x;
+    this.mouse_delta_pos.y = this.mouse_position.y - this.mouse_prev_position.y;
+    this.mouse_prev_position.x = this.mouse_position.x;
+    this.mouse_prev_position.y = this.mouse_position.y;
     this.mouse_frame.clicked = false;
     this.mouse_frame.released = false;
   }
@@ -211,6 +236,8 @@ enum UIAction {
   increment,
   decrement,
   add_new_window,
+  drag_num,
+  test_popup,
 }
 
 const c = <REND>canvas.getContext("2d");
@@ -218,10 +245,13 @@ const input_state = new InputState(canvas, 0, 0);
 
 let num = 0;
 let dt = -1;
+let last_time = 0;
+let frame_time = -1;
 let num_windows = 1;
 
-function update() {
+let test_popup = false;
 
+function update() {
   const st = performance.now();
 
   updateCanvasSizing();
@@ -229,19 +259,50 @@ function update() {
   const stack = new Stack();
 
   for (let i = 0; i < num_windows; i++) {
-    const l1 = stack.makeLayout(input_state, UIAction.placeholder, 100 + 50 * i, 100 + 20 * i, 300, 200, "Window " + (i+1) + " :)");
+    const l1 = stack.makeLayout(
+      input_state,
+      // i == 0 ? null : UIAction.placeholder,
+      UIAction.placeholder,
+      100 + 50 * i,
+      100 + 20 * i,
+      300,
+      100,
+      "Window " + (i + 1) + " :)",
+    );
     l1.makeLabel(c, null, "gui-time = " + dt.toFixed(3) + " ms");
+    l1.makeLabel(c, null, "frame-time = " + frame_time.toFixed(3) + " ms");
+    l1.makeLabel(c, null, "active loc: " + input_state.active_widget_loc);
+    l1.makeLabel(c, null, " ");
     l1.makeLabel(c, null, "num: " + num);
     l1.makeLabel(c, UIAction.increment, "INCREMENT (while hovering)");
     l1.makeLabel(c, UIAction.decrement, "DECREMENT");
     l1.makeButton(c, UIAction.increment, "INCREMENT (press)");
     l1.makeButton(c, UIAction.decrement, "DECREMENT");
-    l1.makeButton(c, UIAction.add_new_window, "Add a new window");
+    i == 0 ? l1.makeButton(c, UIAction.add_new_window, "Add a new window") : null;
+    const d = l1.makeDraggable(c, UIAction.drag_num, "num: " + num);
+    // d.bbox.left = l1.bbox.left;
+    // d.bbox.right = l1.bbox.right;
+    l1.makeDraggable(c, UIAction.drag_num, "num: " + num);
+    l1.makeLabel(c, null, " ");
+    // const b = l1.makeButton(c, UIAction.test_popup, "Press for popup");
+    l1.makeLabel(c, UIAction.test_popup, "hover for popup")
+    l1.updateBBox();
+    if (test_popup) {
+      const pop = l1.makePopup(null, input_state.mouse_position.x + 20, input_state.mouse_position.y);
+      pop.makeLabel(c, null, "I am a toolkit");
+      pop.updateBBox();
+    }
   }
 
-  stack.updateBBoxes();
+  // stack.updateBBoxes();
 
-  const action = stack.requestAction(input_state);
+  const ret = stack.requestAction(input_state)
+  const action = ret.action;
+
+  if (action == null) {
+    test_popup = false;
+  }
+
   switch (action) {
     case UIAction.increment:
       num++;
@@ -252,14 +313,24 @@ function update() {
     case UIAction.add_new_window:
       num_windows++;
       break;
+    case UIAction.drag_num:
+      num += input_state.mouse_delta_pos.x;
+      if (num < -100) num = -100;
+      if (num > 100) num = 100;
+      break;
+    case UIAction.test_popup:
+      test_popup = true;
+      break;
   }
 
   c.clearRect(0, 0, canvas.width, canvas.height);
-  stack.render(c);
+  stack.stack_render(c, input_state);
   input_state.end();
 
   const et = performance.now();
   dt = et - st;
+  frame_time = et - last_time;
+  last_time = et;
 
   requestAnimationFrame(update);
 }

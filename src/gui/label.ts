@@ -50,30 +50,27 @@ export class Label<ActionType> implements Widget<ActionType> {
 
   }
 
-  requestAction(input_state: InputState): N<ActionType> {
+  requestAction(input_state: InputState): { wants_focus: boolean, action: N<ActionType> } {
     if (this.action_type == null)
-      return null;
-
+      return { wants_focus: false, action: null };
     const [x, y] = [input_state.mouse_position.x, input_state.mouse_position.y];
 
     if (MBBox.isInside(this.bbox, x, y) && this.action_type != null) {
       this.state = LabelState.hovered;
       input_state.active_widget_loc = this.loc;
-    } else
-      input_state.active_widget_loc = [];
+    }
 
     if (this.state == LabelState.hovered) {
-      return this.action_type;
+      return { wants_focus: false, action: this.action_type };
     }
 
     for (let widget of this.widgets) {
-      // FIX: CASTING HELL
-      const ret = <N<ActionType>>widget.requestAction(input_state);
-      if (ret != null)
+      const ret = widget.requestAction(input_state);
+      if (ret.wants_focus || ret.action != null)
         return ret;
     }
 
-    return null;
+    return { wants_focus: false, action: null };
 
   };
 
