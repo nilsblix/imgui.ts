@@ -2,6 +2,7 @@ import { REND, N, WidgetLoc, Cursor, BBox, MBBox, MColor, Widget, GlobalStyle, I
 import { Label } from "./label.ts";
 import { Button } from "./button.ts";
 import { Draggable } from "./draggable.ts";
+import { Text } from "./text.ts";
 
 class Header<ActionType> implements Widget<ActionType> {
   bbox: BBox;
@@ -153,14 +154,12 @@ export class Layout<ActionType> implements Widget<ActionType> {
         this.bbox.top = widget.bbox.top;
       if (widget.bbox.bottom > this.bbox.bottom)
         this.bbox.bottom = widget.bbox.bottom;
-
-      this.bbox.right += GlobalStyle.layout.padding;
-      this.bbox.bottom += GlobalStyle.layout.padding;
-
-      if (this.widgets[0] instanceof Header)
-        this.widgets[0].bbox.right = this.bbox.right;
-
     }
+    this.bbox.right += GlobalStyle.layout.padding;
+    this.bbox.bottom += GlobalStyle.layout.padding;
+
+    if (this.widgets[0] instanceof Header)
+      this.widgets[0].bbox.right = this.bbox.right;
   }
 
   makeLabel(c: REND, action_type: ActionType, text: string): Label<ActionType> {
@@ -179,6 +178,12 @@ export class Layout<ActionType> implements Widget<ActionType> {
     const draggable = new Draggable<ActionType>(c, action_type, this.loc.concat([this.widgets.length]), this.cursor, text);
     this.pushWidget(draggable);
     return draggable;
+  }
+
+  makeText(c: REND, action_type: ActionType, text: string, max_width: number): Text<ActionType> {
+    const wtext = new Text<ActionType>(c, action_type, this.loc.concat([this.widgets.length]), this.cursor, text, max_width);
+    this.pushWidget(wtext);
+    return wtext;
   }
 
   makePopup(action_type: ActionType, x: number, y: number): Layout<ActionType> {

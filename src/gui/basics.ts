@@ -1,4 +1,4 @@
-// NOTES:
+// NOTES:GG
 // layering of layouts. FUCK. indices of persistent states will be FUCKED.
 //  ==> Maybe other persistent array of index mapping? still FUCKED
 // More widgets :)
@@ -238,6 +238,8 @@ enum UIAction {
   add_new_window,
   drag_num,
   test_popup,
+  drag_text_wrap_width,
+  HIGH_drag_text_wrap_width,
 }
 
 const c = <REND>canvas.getContext("2d");
@@ -250,6 +252,8 @@ let frame_time = -1;
 let num_windows = 1;
 
 let test_popup = false;
+
+let text_wrap_width = 200;
 
 function update() {
   const st = performance.now();
@@ -265,8 +269,8 @@ function update() {
       UIAction.placeholder,
       100 + 50 * i,
       100 + 20 * i,
-      300,
-      100,
+      0,
+      0,
       "Window " + (i + 1) + " :)",
     );
     l1.makeLabel(c, null, "gui-time = " + dt.toFixed(3) + " ms");
@@ -279,15 +283,16 @@ function update() {
     l1.makeButton(c, UIAction.increment, "INCREMENT (press)");
     l1.makeButton(c, UIAction.decrement, "DECREMENT");
     i == 0 ? l1.makeButton(c, UIAction.add_new_window, "Add a new window") : null;
-    const d = l1.makeDraggable(c, UIAction.drag_num, "num: " + num);
-    // d.bbox.left = l1.bbox.left;
-    // d.bbox.right = l1.bbox.right;
     l1.makeDraggable(c, UIAction.drag_num, "num: " + num);
     l1.makeLabel(c, null, " ");
+    l1.makeDraggable(c, UIAction.drag_text_wrap_width, "wrap width: " + text_wrap_width);
+    l1.makeText(c, UIAction.increment, "This an example of a long ass text to test text-wrapping. Some real lorem ipsum shit here bro", text_wrap_width);
+    l1.makeText(c, null, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", text_wrap_width);
+    l1.makeDraggable(c, UIAction.HIGH_drag_text_wrap_width, "HIGHER SENS wrap width: " + text_wrap_width);
     // const b = l1.makeButton(c, UIAction.test_popup, "Press for popup");
-    l1.makeLabel(c, UIAction.test_popup, "hover for popup")
+    // l1.makeLabel(c, i == 0 ? UIAction.test_popup : UIAction.increment, "hover for popup")
     l1.updateBBox();
-    if (test_popup) {
+    if (test_popup && i == 0) {
       const pop = l1.makePopup(null, input_state.mouse_position.x + 20, input_state.mouse_position.y);
       pop.makeLabel(c, null, "I am a toolkit");
       pop.updateBBox();
@@ -318,6 +323,14 @@ function update() {
       if (num < -100) num = -100;
       if (num > 100) num = 100;
       break;
+    case UIAction.drag_text_wrap_width:
+      text_wrap_width += input_state.mouse_delta_pos.x;
+      if (text_wrap_width < 0) text_wrap_width = 0;
+      break;
+    case UIAction.HIGH_drag_text_wrap_width:
+      text_wrap_width += 3 * input_state.mouse_delta_pos.x;
+      if (text_wrap_width < 0) text_wrap_width = 0;
+      break;
     case UIAction.test_popup:
       test_popup = true;
       break;
@@ -331,8 +344,6 @@ function update() {
   dt = et - st;
   frame_time = et - last_time;
   last_time = et;
-
-  requestAnimationFrame(update);
 }
 
-update();
+setInterval(update, 1E3/120);
