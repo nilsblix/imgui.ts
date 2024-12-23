@@ -1,8 +1,8 @@
 import { REND, N, WidgetLoc, Cursor, BBox, MBBox, MColor, Widget, GlobalStyle, InputState } from "./basics.ts";
-import { Label } from "./label.ts";
-import { Button } from "./button.ts";
-import { Draggable } from "./draggable.ts";
-import { Text } from "./text.ts";
+import { Label } from "./widgets/label.ts";
+import { Button } from "./widgets/button.ts";
+import { Draggable } from "./widgets/draggable.ts";
+import { Text } from "./widgets/text.ts";
 
 class Header<ActionType> implements Widget<ActionType> {
   bbox: BBox;
@@ -49,15 +49,27 @@ class Header<ActionType> implements Widget<ActionType> {
 
 }
 
+const enum LayoutState {
+  window,
+  popup,
+  grid
+}
+
 export class Layout<ActionType> implements Widget<ActionType> {
   bbox: BBox;
   action_type: ActionType;
   loc: WidgetLoc;
   widgets: Widget<ActionType>[];
   cursor: Cursor;
+  state: LayoutState;
+  tools: {
+    columns: number,
+  }
 
   constructor(action_type: ActionType, loc: WidgetLoc, x: number, y: number, width: number, height: number, title: string) {
-    this.cursor = { x: x, y: y };
+    this.cursor = { x: x + GlobalStyle.layout.padding, y: y };
+    this.state = LayoutState.window;
+    this.tools = { columns: -1 };
 
     this.bbox = { left: x, top: y, right: x + width, bottom: y + height };
 
@@ -69,14 +81,36 @@ export class Layout<ActionType> implements Widget<ActionType> {
     header_loc.push(0);
 
     const header = new Header(header_loc, action_type, title, this.cursor.x, this.cursor.y, 10);
-    this.pushWidget(header);
-
-    this.cursor.x += GlobalStyle.layout.padding;
+    this.widgets.push(header);
+    this.cursor.y += MBBox.calcHeight(header.bbox) + GlobalStyle.layout.widget_gap;
   }
 
   pushWidget(widget: Widget<ActionType>) {
     this.widgets.push(widget);
-    this.cursor.y += MBBox.calcHeight(widget.bbox) + GlobalStyle.layout.widget_gap;
+    this.updateBBox(widget);
+    switch (this.state) {
+      case LayoutState.window:
+        this.cursor.y += MBBox.calcHeight(widget.bbox) + GlobalStyle.layout.widget_gap;
+        break;
+      case LayoutState.popup:
+        this.cursor.y += MBBox.calcHeight(widget.bbox) + GlobalStyle.layout.widget_gap;
+        break;
+      case LayoutState.grid:
+        const offset = this.widgets[0] instanceof Header ? -1 : 0;
+        if ((this.widgets.length + offset) % this.tools.columns == 0) {
+          let row_height = 0;
+          for (let i = this.widgets.length - this.tools.columns; i < this.widgets.length; i++) {
+            const h = MBBox.calcHeight(this.widgets[i].bbox)
+            if (h > row_height)
+              row_height = h;
+          }
+          this.cursor.x = this.bbox.left + GlobalStyle.layout.padding;
+          this.cursor.y += row_height + GlobalStyle.grid.widget_gap;
+        } else {
+          this.cursor.x = this.bbox.left + GlobalStyle.grid.widget_gap + (this.widgets.length + offset) % this.tools.columns * MBBox.calcWidth(this.bbox) / this.tools.columns;
+        }
+        break;
+    }
   }
 
   render(c: REND): void {
@@ -99,9 +133,10 @@ export class Layout<ActionType> implements Widget<ActionType> {
       return activePath.length === widget.loc.length && activePath.every((v, i) => v === widget.loc[i]);
     };
 
-    if (!is_candidate_for_active(this)) {
-      return { wants_focus: false, action: null };
-    }
+    // FIXME: this might have to be activated when working with popups again
+    // if (!is_candidate_for_active(this)) {
+    //   return { wants_focus: false, action: null };
+    // }
 
     const [x, y] = [input_state.mouse_position.x, input_state.mouse_position.y];
     const inside = MBBox.isInside(this.bbox, x, y);
@@ -141,25 +176,26 @@ export class Layout<ActionType> implements Widget<ActionType> {
 
   };
 
-  updateBBox() {
-    for (let widget of this.widgets) {
-      if (widget instanceof Layout)
-        (<Layout<ActionType>>widget).updateBBox();
+  updateBBox(widget: Widget<ActionType>) {
+    const p = GlobalStyle.layout.padding;
 
-      if (widget.bbox.left < this.bbox.left)
-        this.bbox.left = widget.bbox.left;
-      if (widget.bbox.right > this.bbox.right)
-        this.bbox.right = widget.bbox.right;
-      if (widget.bbox.top < this.bbox.top)
-        this.bbox.top = widget.bbox.top;
-      if (widget.bbox.bottom > this.bbox.bottom)
-        this.bbox.bottom = widget.bbox.bottom;
+    if (widget.bbox.left < this.bbox.left + p) {
+      this.bbox.left = widget.bbox.left - (this.state == LayoutState.grid ? 0 : p);
     }
-    this.bbox.right += GlobalStyle.layout.padding;
-    this.bbox.bottom += GlobalStyle.layout.padding;
+    if (widget.bbox.right > this.bbox.right - (this.state == LayoutState.grid ? 0 : p)) {
+      this.bbox.right = widget.bbox.right + p;
+    }
+    if (widget.bbox.top < this.bbox.top + p) {
+      this.bbox.top = widget.bbox.top - p;
+    }
+    if (widget.bbox.bottom > this.bbox.bottom - p) {
+      this.bbox.bottom = widget.bbox.bottom + p;
+    }
 
-    if (this.widgets[0] instanceof Header)
+    if (this.widgets[0] instanceof Header) {
+      this.widgets[0].bbox.left = this.bbox.left;
       this.widgets[0].bbox.right = this.bbox.right;
+    }
   }
 
   makeLabel(c: REND, action_type: ActionType, text: string): Label<ActionType> {
@@ -188,10 +224,32 @@ export class Layout<ActionType> implements Widget<ActionType> {
 
   makePopup(action_type: ActionType, x: number, y: number): Layout<ActionType> {
     const pop = new Layout<ActionType>(action_type, this.loc.concat([this.widgets.length]), x, y, 0, 0, "");
+    pop.state = LayoutState.popup;
     pop.cursor.y -= MBBox.calcHeight(pop.widgets[0].bbox) + GlobalStyle.layout.widget_gap - GlobalStyle.layout.padding;
     pop.widgets = [];
-    this.pushWidget(pop);
+    this.widgets.push(pop);
     return pop;
+  }
+
+  makeGrid(action_type: ActionType, columns: number, relative_width: number, title?: string): Layout<ActionType> {
+    const grid = new Layout<ActionType>(action_type, this.loc.concat([this.widgets.length]), this.cursor.x, this.cursor.y, relative_width * (MBBox.calcWidth(this.bbox) - 2 * GlobalStyle.layout.padding), 0, title ?? "");
+    if (!title) {
+      grid.cursor.y -= MBBox.calcHeight(grid.widgets[0].bbox) + GlobalStyle.layout.widget_gap - GlobalStyle.layout.padding;
+      grid.widgets = [];
+    }
+    grid.tools.columns = columns;
+    grid.state = LayoutState.grid;
+    this.pushWidget(grid);
+    return grid;
+  }
+
+  resetCursor(): void {
+    this.cursor.x = this.bbox.left + GlobalStyle.layout.padding;
+    this.cursor.y = this.bbox.bottom;
+    // switch (this.state) {
+    //   case LayoutState.grid:
+    //     break;
+    // }
   }
 
 }

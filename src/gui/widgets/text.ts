@@ -1,4 +1,4 @@
-import { REND, N, WidgetLoc, Cursor, BBox, MBBox, MColor, Widget, GlobalStyle, InputState } from "./basics.ts";
+import { REND, N, WidgetLoc, Cursor, BBox, MBBox, MColor, Widget, GlobalStyle, InputState } from "../basics.ts";
 
 const enum TextState {
   default,
@@ -31,10 +31,17 @@ export class Text<ActionType> implements Widget<ActionType> {
     // Calculate wrapped lines
     this.wrapped_lines = this.wrapText(c, text, max_width);
 
+    let width = 0;
+    for (let i = 0; i < this.wrapped_lines.length; i++) {
+      const w = c.measureText(this.wrapped_lines[i]).width
+      if (width < w)
+        width = w;
+
+    }
+
     // Calculate bounding box based on wrapped lines
     const line_height = this.text_size * 1.2; // Adjust line height as needed
     const height = this.wrapped_lines.length * line_height;
-    const width = max_width;
     this.bbox = { left: cursor.x, top: cursor.y, right: cursor.x + width, bottom: cursor.y + height };
   }
 
@@ -77,6 +84,7 @@ export class Text<ActionType> implements Widget<ActionType> {
       y += line_height;
     }
 
+    // TEMP DEBUG
     // c.strokeStyle = MColor.string(MColor.white);
     // c.strokeRect(this.bbox.left, this.bbox.top, MBBox.calcWidth(this.bbox), MBBox.calcHeight(this.bbox));
   }

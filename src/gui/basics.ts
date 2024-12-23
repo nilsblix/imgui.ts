@@ -7,7 +7,15 @@
 // * fix clearing of active widget when spawning new layout (window)
 // * more sophisticated popup handling. maybe internal handling of its states.
 // * color widget. vector4 with popups and everything twin
+// NEW NOTES
+// * fix gap issues in grid
+// * fix grid onclick drag window thing
+// * fix other grid issues such as relative sizing issues and closing/finishing grid cursor thing
+// * color widget pls
+// fine with user based popup data handling. don't really want to fix that
+// the user can fuck off and learn the intricasies of the based nirf_gui.
 import { Stack } from "./stack.ts";
+import { Layout } from "./layout.ts";
 
 const canvas = document.createElement("canvas");
 canvas.id = "nirf_canvas";
@@ -147,6 +155,9 @@ export class GlobalStyle {
     bg_color: MColor.fromHex("#0F0F0FF0"),
     border: "#6E6E8080",
   };
+  static grid = {
+    widget_gap: 5,
+  }
   static header = {
     color: "#ffffff",
     bg_color: "#294A7AFF",
@@ -238,6 +249,7 @@ enum UIAction {
   add_new_window,
   drag_num,
   test_popup,
+  test_popup_switch,
   drag_text_wrap_width,
   HIGH_drag_text_wrap_width,
 }
@@ -253,58 +265,90 @@ let num_windows = 1;
 
 let test_popup = false;
 
-let text_wrap_width = 200;
+let text_wrap_width = 400;
 
 function update() {
   const st = performance.now();
 
   updateCanvasSizing();
 
-  const stack = new Stack();
+  const stack = new Stack<N<UIAction>>();
 
   for (let i = 0; i < num_windows; i++) {
-    const l1 = stack.makeLayout(
-      input_state,
-      // i == 0 ? null : UIAction.placeholder,
-      UIAction.placeholder,
-      100 + 50 * i,
-      100 + 20 * i,
-      0,
-      0,
-      "Window " + (i + 1) + " :)",
-    );
-    l1.makeLabel(c, null, "gui-time = " + dt.toFixed(3) + " ms");
-    l1.makeLabel(c, null, "frame-time = " + frame_time.toFixed(3) + " ms");
-    l1.makeLabel(c, null, "active loc: " + input_state.active_widget_loc);
-    l1.makeLabel(c, null, " ");
-    l1.makeLabel(c, null, "num: " + num);
-    l1.makeLabel(c, UIAction.increment, "INCREMENT (while hovering)");
-    l1.makeLabel(c, UIAction.decrement, "DECREMENT");
-    l1.makeButton(c, UIAction.increment, "INCREMENT (press)");
-    l1.makeButton(c, UIAction.decrement, "DECREMENT");
-    i == 0 ? l1.makeButton(c, UIAction.add_new_window, "Add a new window") : null;
-    l1.makeDraggable(c, UIAction.drag_num, "num: " + num);
-    l1.makeLabel(c, null, " ");
-    l1.makeDraggable(c, UIAction.drag_text_wrap_width, "wrap width: " + text_wrap_width);
-    l1.makeText(c, UIAction.increment, "This an example of a long ass text to test text-wrapping. Some real lorem ipsum shit here bro", text_wrap_width);
-    l1.makeText(c, null, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", text_wrap_width);
-    l1.makeDraggable(c, UIAction.HIGH_drag_text_wrap_width, "HIGHER SENS wrap width: " + text_wrap_width);
-    // const b = l1.makeButton(c, UIAction.test_popup, "Press for popup");
-    // l1.makeLabel(c, i == 0 ? UIAction.test_popup : UIAction.increment, "hover for popup")
-    l1.updateBBox();
-    if (test_popup && i == 0) {
-      const pop = l1.makePopup(null, input_state.mouse_position.x + 20, input_state.mouse_position.y);
-      pop.makeLabel(c, null, "I am a toolkit");
-      pop.updateBBox();
+    if (i == 0) {
+      const l = stack.makeLayout(input_state, UIAction.placeholder, 100, 100, 0, 0, "FIRST window :D");
+      l.makeLabel(c, null, "gui-time = " + dt.toFixed(4));
+      l.makeLabel(c, null, "frt = " + frame_time.toFixed(4));
+      l.makeLabel(c, null, "active loc = " + input_state.active_widget_loc);
+      l.makeButton(c, UIAction.increment, "Increment");
+      l.makeButton(c, UIAction.decrement, "Decrement");
+      l.makeButton(c, UIAction.test_popup_switch, "popup");
+      l.makeLabel(c, null, "Drag some arbitrary num").bbox;
+      l.makeDraggable(c, UIAction.drag_num, "num: " + num);
+      l.makeDraggable(c, UIAction.drag_text_wrap_width, "Wrap width: " + text_wrap_width);
+      l.makeLabel(c, null, " ");
+      l.makeButton(c, UIAction.add_new_window, "Add a window. " + num_windows);
+      l.makeText(c, UIAction.increment, "Some more standard placeholder text that isn't some weird loremm ipsum shit that everyone is tired of. Wow have I offended someone with that statement. Fuck you those that are offended. I don't give a fuck", text_wrap_width);
+
+      function grid3x3(layout: Layout<N<UIAction>>) {
+        if (layout.loc.length > 3) return;
+        const g = layout.makeGrid(null, 3, 0.5);
+        // g.makeLabel(c, null, "g00");
+        // g.makeLabel(c, null, "g10");
+        // g.makeLabel(c, null, "g20");
+        // g.makeLabel(c, null, "g01");
+        // g.makeLabel(c, null, "g11");
+        // g.makeLabel(c, null, "g21");
+        // g.makeLabel(c, null, "g02");
+        // g.makeLabel(c, null, "g12");
+        // g.makeLabel(c, null, "g22");
+        g.makeDraggable(c, UIAction.drag_text_wrap_width, "g00");
+        g.makeDraggable(c, UIAction.drag_text_wrap_width, "g10");
+        g.makeDraggable(c, UIAction.drag_text_wrap_width, "g20");
+        g.makeDraggable(c, UIAction.drag_text_wrap_width, "g01");
+        g.makeDraggable(c, UIAction.drag_text_wrap_width, "g11");
+        g.makeDraggable(c, UIAction.drag_text_wrap_width, "g21");
+        g.makeDraggable(c, UIAction.drag_text_wrap_width, "g02");
+        g.makeDraggable(c, UIAction.drag_text_wrap_width, "g12");
+        g.makeDraggable(c, UIAction.drag_text_wrap_width, "g22");
+
+        layout.updateBBox(g);
+      }
+
+      l.makeLabel(c, UIAction.decrement, "* Recursive Grids:");
+      const g2 = l.makeGrid(null, 2, 1.0, "test t");
+
+      grid3x3(g2);
+      grid3x3(g2);
+      grid3x3(g2);
+      grid3x3(g2);
+      grid3x3(g2);
+      grid3x3(g2);
+
+      g2.bbox.right += GlobalStyle.layout.padding - GlobalStyle.grid.widget_gap;
+      g2.widgets[0].bbox.right = g2.bbox.right;
+
+      l.updateBBox(g2);
+      l.resetCursor();
+
+      l.makeLabel(c, null, "cursor placement after grid");
+
+      if (test_popup) {
+        const p = l.makePopup(UIAction.placeholder, 500, 10);
+        p.makeLabel(c, null, "Popup");
+        p.makeLabel(c, null, "Hello, world!");
+        p.makeDraggable(c, UIAction.drag_text_wrap_width, "wwidth");
+      }
+    } else {
+      const l = stack.makeLayout(input_state, UIAction.placeholder, 100+20*i, 100 + 10*i, 0, 0, (i + 1) + "th? window :P");
+      l.makeText(c, null, "Some more standard placeholder text that isn't some weird loremm ipsum shit that everyone is tired of. Wow have I offended someone with that statement. Fuck you those that are offended. I don't give a fuck", text_wrap_width);
     }
   }
-
-  // stack.updateBBoxes();
 
   const ret = stack.requestAction(input_state)
   const action = ret.action;
 
-  if (action == null) {
+  if (input_state.active_widget_loc.length > 0 && input_state.active_widget_loc[0] != 0) {
     test_popup = false;
   }
 
@@ -328,11 +372,14 @@ function update() {
       if (text_wrap_width < 0) text_wrap_width = 0;
       break;
     case UIAction.HIGH_drag_text_wrap_width:
-      text_wrap_width += 3 * input_state.mouse_delta_pos.x;
+      text_wrap_width += 2 * input_state.mouse_delta_pos.x;
       if (text_wrap_width < 0) text_wrap_width = 0;
       break;
     case UIAction.test_popup:
       test_popup = true;
+      break;
+    case UIAction.test_popup_switch:
+      test_popup = !test_popup;
       break;
   }
 

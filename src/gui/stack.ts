@@ -68,12 +68,4 @@ export class Stack<ActionType> implements Widget<ActionType> { // root
     }
     return { wants_focus: false, action: null };
   }
-
-  updateBBoxes() {
-    for (let i = 0; i < this.widgets.length; i++) {
-      if (this.widgets[i] instanceof Layout) {
-        (this.widgets[i] as Layout<ActionType>).updateBBox();
-      }
-    }
-  }
 }
