@@ -1,5 +1,7 @@
-import { REND, N, BBox, MBBox, Widget, InputState, WidgetLoc } from "./basics.ts";
-import { Layout } from "./layout.ts";
+import { REND, N, BBox, MBBox, Widget, InputState, WidgetLoc, GlobalStyle } from "./gui.ts";
+import { Layout } from "./layout_widgets/layout.ts";
+import { Window } from "./layout_widgets/window.ts";
+import { Grid } from "./layout_widgets/grid.ts";
 
 export class Stack<ActionType> implements Widget<ActionType> { // root
   bbox: BBox;
@@ -23,7 +25,7 @@ export class Stack<ActionType> implements Widget<ActionType> { // root
     }
   }
 
-  makeLayout(input_state: InputState, action_type: ActionType, x: number, y: number, width: number, height: number, title: string): Layout<ActionType> {
+  makeWindow(input_state: InputState, action_type: ActionType, x: number, y: number, width: number, height: number, title: string): Window<ActionType> {
     const idx = this.widgets.length;
 
     if (input_state.window_offsets.length <= this.widgets.length) {
@@ -32,10 +34,16 @@ export class Stack<ActionType> implements Widget<ActionType> { // root
       input_state.window_order.unshift(idx);
     }
 
-    const lay = new Layout<ActionType>(action_type, [idx], input_state.window_positions[idx].x, input_state.window_positions[idx].y, width, height, title);
-    this.widgets.push(lay);
+    const wind = new Window<ActionType>(action_type, [idx], input_state.window_positions[idx].x, input_state.window_positions[idx].y, width, height, title);
+    this.widgets.push(wind);
 
-    return lay;
+    return wind;
+  }
+
+  static makeGrid<ActionType>(layout: Layout<ActionType>, action_type: ActionType, cols: number, relative_width: number): Grid<ActionType> {
+    const grid = new Grid<ActionType>(action_type, layout.loc.concat([layout.widgets.length]), layout.cursor.x, layout.cursor.y + GlobalStyle.layout_commons.padding, relative_width * (layout.bbox.right - layout.bbox.left), cols);
+    layout.pushWidget(grid);
+    return grid;
   }
 
   requestAction(input_state: InputState): { wants_focus: boolean, action: N<ActionType> } {

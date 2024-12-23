@@ -15,7 +15,7 @@
 // fine with user based popup data handling. don't really want to fix that
 // the user can fuck off and learn the intricasies of the based nirf_gui.
 import { Stack } from "./stack.ts";
-import { Layout } from "./layout.ts";
+import { Layout } from "./layout_widgets/layout.ts";
 
 const canvas = document.createElement("canvas");
 canvas.id = "nirf_canvas";
@@ -149,25 +149,23 @@ export class GlobalStyle {
     padding: 3,
     font_size: 16,
   };
-  static layout = {
+  static layout_commons = {
     padding: 10,
     widget_gap: 5,
     bg_color: MColor.fromHex("#0F0F0FF0"),
     border: "#6E6E8080",
-  };
-  static grid = {
-    widget_gap: 5,
   }
-  static header = {
+  static header_commons = {
     color: "#ffffff",
     bg_color: "#294A7AFF",
     font_size: 16,
   };
+  static window = {
+  }
+  static grid = {
+  }
   static popup = {
-    padding: 5,
-    widget_gap: 5,
-    bg_color: MColor.fromHex("#0F0F0FF0"),
-    border: "#6E6E8080",
+
   }
 }
 
@@ -248,8 +246,6 @@ enum UIAction {
   decrement,
   add_new_window,
   drag_num,
-  test_popup,
-  test_popup_switch,
   drag_text_wrap_width,
   HIGH_drag_text_wrap_width,
 }
@@ -263,8 +259,6 @@ let last_time = 0;
 let frame_time = -1;
 let num_windows = 1;
 
-let test_popup = false;
-
 let text_wrap_width = 400;
 
 function update() {
@@ -276,81 +270,59 @@ function update() {
 
   for (let i = 0; i < num_windows; i++) {
     if (i == 0) {
-      const l = stack.makeLayout(input_state, UIAction.placeholder, 100, 100, 0, 0, "FIRST window :D");
+      const l = stack.makeWindow(input_state, UIAction.placeholder, 100, 100, 0, 0, "FIRST window :D");
       l.makeLabel(c, null, "gui-time = " + dt.toFixed(4));
       l.makeLabel(c, null, "frt = " + frame_time.toFixed(4));
       l.makeLabel(c, null, "active loc = " + input_state.active_widget_loc);
       l.makeButton(c, UIAction.increment, "Increment");
       l.makeButton(c, UIAction.decrement, "Decrement");
-      l.makeButton(c, UIAction.test_popup_switch, "popup");
-      l.makeLabel(c, null, "Drag some arbitrary num").bbox;
-      l.makeDraggable(c, UIAction.drag_num, "num: " + num);
+      l.makeLabel(c, null, "Drag some arbitrary number").bbox;
+      l.makeDraggable(c, UIAction.drag_num, "number = " + num);
       l.makeDraggable(c, UIAction.drag_text_wrap_width, "Wrap width: " + text_wrap_width);
       l.makeLabel(c, null, " ");
       l.makeButton(c, UIAction.add_new_window, "Add a window. " + num_windows);
       l.makeText(c, UIAction.increment, "Some more standard placeholder text that isn't some weird loremm ipsum shit that everyone is tired of. Wow have I offended someone with that statement. Fuck you those that are offended. I don't give a fuck", text_wrap_width);
 
-      function grid3x3(layout: Layout<N<UIAction>>) {
-        if (layout.loc.length > 3) return;
-        const g = layout.makeGrid(null, 3, 0.5);
-        // g.makeLabel(c, null, "g00");
-        // g.makeLabel(c, null, "g10");
-        // g.makeLabel(c, null, "g20");
-        // g.makeLabel(c, null, "g01");
-        // g.makeLabel(c, null, "g11");
-        // g.makeLabel(c, null, "g21");
-        // g.makeLabel(c, null, "g02");
-        // g.makeLabel(c, null, "g12");
-        // g.makeLabel(c, null, "g22");
-        g.makeDraggable(c, UIAction.drag_text_wrap_width, "g00");
-        g.makeDraggable(c, UIAction.drag_text_wrap_width, "g10");
-        g.makeDraggable(c, UIAction.drag_text_wrap_width, "g20");
-        g.makeDraggable(c, UIAction.drag_text_wrap_width, "g01");
-        g.makeDraggable(c, UIAction.drag_text_wrap_width, "g11");
-        g.makeDraggable(c, UIAction.drag_text_wrap_width, "g21");
-        g.makeDraggable(c, UIAction.drag_text_wrap_width, "g02");
-        g.makeDraggable(c, UIAction.drag_text_wrap_width, "g12");
-        g.makeDraggable(c, UIAction.drag_text_wrap_width, "g22");
+      l.makeLabel(c, null, " ");
 
-        layout.updateBBox(g);
-      }
-
-      l.makeLabel(c, UIAction.decrement, "* Recursive Grids:");
-      const g2 = l.makeGrid(null, 2, 1.0, "test t");
-
-      grid3x3(g2);
-      grid3x3(g2);
-      grid3x3(g2);
-      grid3x3(g2);
-      grid3x3(g2);
-      grid3x3(g2);
-
-      g2.bbox.right += GlobalStyle.layout.padding - GlobalStyle.grid.widget_gap;
-      g2.widgets[0].bbox.right = g2.bbox.right;
-
-      l.updateBBox(g2);
+      l.makeLabel(c, null, "* Grid => ");
+      const g = Stack.makeGrid(l, UIAction.placeholder, 3, 1.0);
+      g.makeDraggable(c, UIAction.drag_num, "g00");
+      g.makeDraggable(c, UIAction.drag_num, "g10");
+      g.makeDraggable(c, UIAction.drag_num, "g20");
+      g.makeDraggable(c, UIAction.drag_num, "g01");
+      g.makeDraggable(c, UIAction.drag_num, "g11");
+      g.makeDraggable(c, UIAction.drag_num, "g21");
+      g.makeDraggable(c, UIAction.drag_num, "g02");
+      g.makeDraggable(c, UIAction.drag_num, "g12");
+      g.makeDraggable(c, UIAction.drag_num, "g22");
+      l.updateBBox(g);
       l.resetCursor();
+      l.makeLabel(c, null, "Testing text after grid");
 
-      l.makeLabel(c, null, "cursor placement after grid");
-
-      if (test_popup) {
-        const p = l.makePopup(UIAction.placeholder, 500, 10);
-        p.makeLabel(c, null, "Popup");
-        p.makeLabel(c, null, "Hello, world!");
-        p.makeDraggable(c, UIAction.drag_text_wrap_width, "wwidth");
-      }
+    } else if (i == 1) {
+      const l = stack.makeWindow(input_state, UIAction.placeholder, 200 + 20 * i, 100 + 10 * i, 200, 0, "Window: " + (i + 1));
+      l.makeText(c, null, "Testing cursor before grid. PLS lorem ipsum save me here i'm about to LOSE my mind!! Ha ha ha ha HA. What is happening to me. How do I take of my mask if I'm the mask? What does my face look like", text_wrap_width);
+      const g = Stack.makeGrid(l, null, 2, 1.0);
+      const w = MBBox.calcWidth(l.bbox) / 2.5;
+      const te = "some long debug text";
+      g.makeText(c, null, te, w);
+      g.makeText(c, null, te, w);
+      g.makeText(c, null, te, w);
+      g.makeText(c, null, te, w);
+      g.makeText(c, null, te, w);
+      g.makeText(c, null, te, w);
+      l.updateBBox(g);
+      l.resetCursor();
+      l.makeLabel(c, null, "Testing cursor after grid");
     } else {
-      const l = stack.makeLayout(input_state, UIAction.placeholder, 100+20*i, 100 + 10*i, 0, 0, (i + 1) + "th? window :P");
-      l.makeText(c, null, "Some more standard placeholder text that isn't some weird loremm ipsum shit that everyone is tired of. Wow have I offended someone with that statement. Fuck you those that are offended. I don't give a fuck", text_wrap_width);
+      const l = stack.makeWindow(input_state, UIAction.placeholder, 200 + 20 * i, 100 + 10 * i, 0, 0, "Window: " + (i + 1));
+      l.makeText(c, null, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", text_wrap_width);
     }
   }
 
   const ret = stack.requestAction(input_state)
   const action = ret.action;
-
-  if (input_state.active_widget_loc.length > 0 && input_state.active_widget_loc[0] != 0) {
-    test_popup = false;
-  }
 
   switch (action) {
     case UIAction.increment:
@@ -374,12 +346,6 @@ function update() {
     case UIAction.HIGH_drag_text_wrap_width:
       text_wrap_width += 2 * input_state.mouse_delta_pos.x;
       if (text_wrap_width < 0) text_wrap_width = 0;
-      break;
-    case UIAction.test_popup:
-      test_popup = true;
-      break;
-    case UIAction.test_popup_switch:
-      test_popup = !test_popup;
       break;
   }
 

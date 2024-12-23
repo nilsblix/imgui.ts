@@ -1,10 +1,10 @@
-import { REND, N, WidgetLoc, Cursor, BBox, MBBox, MColor, Widget, GlobalStyle, InputState } from "./basics.ts";
-import { Label } from "./widgets/label.ts";
-import { Button } from "./widgets/button.ts";
-import { Draggable } from "./widgets/draggable.ts";
-import { Text } from "./widgets/text.ts";
+import { REND, N, WidgetLoc, Cursor, BBox, MBBox, MColor, Widget, GlobalStyle, InputState } from "./gui.ts";
+import { Label } from "./basic_widgets/label.ts";
+import { Button } from "./basic_widgets/button.ts";
+import { Draggable } from "./basic_widgets/draggable.ts";
+import { Text } from "./basic_widgets/text.ts";
 
-class Header<ActionType> implements Widget<ActionType> {
+export class Header<ActionType> implements Widget<ActionType> {
   bbox: BBox;
   action_type: ActionType;
   loc: WidgetLoc;
