@@ -1,4 +1,4 @@
-import { REND, N, WidgetLoc, Cursor, BBox, MBBox, MColor, Widget, GlobalStyle, InputState } from "../gui.ts";
+import { REND, N, WidgetLoc, Cursor, BBox, MBBox, Widget, GlobalStyle, InputState } from "../gui.ts";
 import { Label } from "../basic_widgets/label.ts";
 import { Button } from "../basic_widgets/button.ts";
 import { Draggable } from "../basic_widgets/draggable.ts";
@@ -91,6 +91,14 @@ export abstract class Layout<ActionType> implements Widget<ActionType> {
     const [x, y] = [input_state.mouse_position.x, input_state.mouse_position.y];
     const inside = MBBox.isInside(this.bbox, x, y);
 
+    if (!inside && JSON.stringify(input_state.active_widget_loc) == JSON.stringify([]))
+      return { wants_focus: false, action: null };
+
+    if (this.action_type == null) {
+      if (inside && input_state.mouse_frame.clicked)
+        return { wants_focus: true, action: null };
+    }
+
     if (!input_state.moving_window) {
       for (let widget of this.widgets) {
         if (!is_candidate_for_active(widget)) {
@@ -100,11 +108,6 @@ export abstract class Layout<ActionType> implements Widget<ActionType> {
         if (ret.wants_focus || ret.action != null)
           return ret;
       }
-    }
-
-    if (this.action_type == null) {
-      if (inside && input_state.mouse_frame.clicked)
-        return { wants_focus: true, action: null };
     }
 
     if (input_state.active_widget_loc.length > 1 && JSON.stringify(input_state.active_widget_loc) != JSON.stringify(this.loc)) {
@@ -144,8 +147,8 @@ export abstract class Layout<ActionType> implements Widget<ActionType> {
     return draggable;
   }
 
-  makeText(c: REND, action_type: ActionType, text: string, max_width: number): Text<ActionType> {
-    const wtext = new Text<ActionType>(c, action_type, this.loc.concat([this.widgets.length]), this.cursor, text, max_width);
+  makeText(c: REND, action_type: ActionType, text: string, max_width?: number): Text<ActionType> {
+    const wtext = new Text<ActionType>(c, action_type, this.loc.concat([this.widgets.length]), this.cursor, text, max_width ?? (MBBox.calcWidth(this.bbox) - 2 * GlobalStyle.layout_commons.padding));
     this.pushWidget(wtext);
     return wtext;
   }

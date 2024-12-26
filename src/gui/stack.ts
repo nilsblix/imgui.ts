@@ -25,23 +25,34 @@ export class Stack<ActionType> implements Widget<ActionType> { // root
     }
   }
 
-  makeWindow(input_state: InputState, action_type: ActionType, x: number, y: number, width: number, height: number, title: string): Window<ActionType> {
+  makeWindow(c: REND, input_state: InputState, window_action: ActionType, resizeable_action: ActionType,
+    config: {
+      title?: string,
+      x?: number,
+      y?: number,
+      width?: number,
+      height?: number,
+      min_width?: number,
+      min_height?: number
+    }
+  ): Window<ActionType> {
     const idx = this.widgets.length;
 
     if (input_state.window_offsets.length <= this.widgets.length) {
       input_state.window_offsets.push({ x: 0, y: 0 });
-      input_state.window_positions.push({ x: x, y: y });
+      input_state.window_positions.push({ x: config.x ?? 0, y: config.y ?? 0 });
+      input_state.window_sizes.push({ width: config.width ?? 200, height: config.height ?? 200 });
       input_state.window_order.unshift(idx);
     }
 
-    const wind = new Window<ActionType>(action_type, [idx], input_state.window_positions[idx].x, input_state.window_positions[idx].y, width, height, title);
+    const wind = new Window<ActionType>(c, window_action, resizeable_action, [idx], input_state.window_positions[idx].x, input_state.window_positions[idx].y, input_state.window_sizes[idx].width, input_state.window_sizes[idx].height, config.title ?? "Hello, World!", {width: config.min_width ?? 50, height: config.min_height ?? 20});
     this.widgets.push(wind);
 
     return wind;
   }
 
   static makeGrid<ActionType>(layout: Layout<ActionType>, action_type: ActionType, cols: number, relative_width: number): Grid<ActionType> {
-    const grid = new Grid<ActionType>(action_type, layout.loc.concat([layout.widgets.length]), layout.cursor.x, layout.cursor.y + GlobalStyle.layout_commons.padding, relative_width * (layout.bbox.right - layout.bbox.left), cols);
+    const grid = new Grid<ActionType>(action_type, layout.loc.concat([layout.widgets.length]), layout.cursor.x, layout.cursor.y + GlobalStyle.layout_commons.padding, relative_width * (layout.bbox.right - layout.bbox.left - 2 * GlobalStyle.layout_commons.padding), cols);
     layout.pushWidget(grid);
     return grid;
   }
@@ -50,9 +61,35 @@ export class Stack<ActionType> implements Widget<ActionType> { // root
     for (let o = 0; o < input_state.window_order.length; o++) {
       const i = input_state.window_order[o];
       const widget = this.widgets[i];
-      const action = widget.requestAction(input_state);
+      const ret = widget.requestAction(input_state);
 
-      if (action.wants_focus) {
+      if (input_state.mouse_frame.released) {
+        input_state.resizing_window = false;
+        document.body.style.cursor = "default";
+      }
+
+      if (widget instanceof Window) {
+        if (widget.resizeable != null) {
+          // if the window wants to be resized and it is resizeabele
+          if ((ret as { resize: boolean, wants_focus: boolean, action: ActionType }).resize) {
+            input_state.resizing_window = true;
+            document.body.style.cursor = "nwse-resize";
+          }
+          if (input_state.resizing_window && input_state.mouse_frame.clicked) {
+            input_state.window_order.splice(o, 1);
+            input_state.window_order.unshift(i);
+          }
+          if (input_state.resizing_window && JSON.stringify(input_state.active_widget_loc) == JSON.stringify(widget.resizeable.loc)) {
+            input_state.window_sizes[i].width += input_state.window_sizes[i].width < widget.min_size.width && input_state.mouse_delta_pos.x < 0 ? 0 : input_state.mouse_delta_pos.x;
+            input_state.window_sizes[i].height += input_state.window_sizes[i].height < widget.min_size.height && input_state.mouse_delta_pos.y < 0 ? 0 : input_state.mouse_delta_pos.y;
+            break;
+          }
+        }
+      }
+
+      document.body.style.cursor = "default";
+
+      if (ret.wants_focus) {
         input_state.window_order.splice(o, 1);
         input_state.window_order.unshift(i);
       }
@@ -70,9 +107,9 @@ export class Stack<ActionType> implements Widget<ActionType> { // root
         break;
       }
 
-      if (action.action == null && (!MBBox.isInside(widget.bbox, input_state.mouse_position.x, input_state.mouse_position.y) || input_state.moving_window))
+      if (ret.action == null && (!MBBox.isInside(widget.bbox, input_state.mouse_position.x, input_state.mouse_position.y) || input_state.moving_window))
         continue;
-      return action;
+      return ret;
     }
     return { wants_focus: false, action: null };
   }

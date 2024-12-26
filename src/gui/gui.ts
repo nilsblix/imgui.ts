@@ -9,18 +9,19 @@
 // * color widget. vector4 with popups and everything twin
 // NEW NOTES
 // * fix gap issues in grid
-// * fix grid onclick drag window thing
+// STILL * fix grid onclick drag window thing
 // * fix other grid issues such as relative sizing issues and closing/finishing grid cursor thing
 // * color widget pls
 // fine with user based popup data handling. don't really want to fix that
 // the user can fuck off and learn the intricasies of the based nirf_gui.
 import { Stack } from "./stack.ts";
-import { Layout } from "./layout_widgets/layout.ts";
 
-const canvas = document.createElement("canvas");
+export { Stack };
+
+export const canvas = document.createElement("canvas");
 canvas.id = "nirf_canvas";
 document.body.appendChild(canvas);
-function updateCanvasSizing() {
+export function updateCanvasSizing() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   canvas.style.width = window.innerWidth + "px";
@@ -48,6 +49,7 @@ export class MColor {
   static black = { r: 0, g: 0, b: 0, a: 1 };
   static g_18 = { r: 18, g: 19, b: 18, a: 1 };
   static red = { r: 255, g: 0, b: 0, a: 1 };
+  static default_bg: { r: 115, g: 140, b: 153, a: 1 };
 
   static string(color: Color): string {
     return `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`;
@@ -165,7 +167,6 @@ export class GlobalStyle {
   static grid = {
   }
   static popup = {
-
   }
 }
 
@@ -181,9 +182,11 @@ export class InputState {
   };
 
   moving_window: boolean;
+  resizing_window: boolean;
 
   window_offsets: Cursor[];
   window_positions: Cursor[];
+  window_sizes: { width: number, height: number }[];
   window_order: number[];
 
   active_widget_loc: number[];
@@ -200,8 +203,11 @@ export class InputState {
     };
 
     this.moving_window = false;
+    this.resizing_window = false;
+
     this.window_offsets = [];
     this.window_positions = [];
+    this.window_sizes = [];
     this.window_order = [];
     this.active_widget_loc = [];
 
@@ -238,125 +244,3 @@ export class InputState {
     this.mouse_frame.released = false;
   }
 }
-
-// USER MADE THINGS: SHOULD BE IN main.ts
-enum UIAction {
-  placeholder,
-  increment,
-  decrement,
-  add_new_window,
-  drag_num,
-  drag_text_wrap_width,
-  HIGH_drag_text_wrap_width,
-}
-
-const c = <REND>canvas.getContext("2d");
-const input_state = new InputState(canvas, 0, 0);
-
-let num = 0;
-let dt = -1;
-let last_time = 0;
-let frame_time = -1;
-let num_windows = 1;
-
-let text_wrap_width = 400;
-
-function update() {
-  const st = performance.now();
-
-  updateCanvasSizing();
-
-  const stack = new Stack<N<UIAction>>();
-
-  for (let i = 0; i < num_windows; i++) {
-    if (i == 0) {
-      const l = stack.makeWindow(input_state, UIAction.placeholder, 100, 100, 0, 0, "FIRST window :D");
-      l.makeLabel(c, null, "gui-time = " + dt.toFixed(4));
-      l.makeLabel(c, null, "frt = " + frame_time.toFixed(4));
-      l.makeLabel(c, null, "active loc = " + input_state.active_widget_loc);
-      l.makeButton(c, UIAction.increment, "Increment");
-      l.makeButton(c, UIAction.decrement, "Decrement");
-      l.makeLabel(c, null, "Drag some arbitrary number").bbox;
-      l.makeDraggable(c, UIAction.drag_num, "number = " + num);
-      l.makeDraggable(c, UIAction.drag_text_wrap_width, "Wrap width: " + text_wrap_width);
-      l.makeLabel(c, null, " ");
-      l.makeButton(c, UIAction.add_new_window, "Add a window. " + num_windows);
-      l.makeText(c, UIAction.increment, "Some more standard placeholder text that isn't some weird loremm ipsum shit that everyone is tired of. Wow have I offended someone with that statement. Fuck you those that are offended. I don't give a fuck", text_wrap_width);
-
-      l.makeLabel(c, null, " ");
-
-      l.makeLabel(c, null, "* Grid => ");
-      const g = Stack.makeGrid(l, UIAction.placeholder, 3, 1.0);
-      g.makeDraggable(c, UIAction.drag_num, "g00");
-      g.makeDraggable(c, UIAction.drag_num, "g10");
-      g.makeDraggable(c, UIAction.drag_num, "g20");
-      g.makeDraggable(c, UIAction.drag_num, "g01");
-      g.makeDraggable(c, UIAction.drag_num, "g11");
-      g.makeDraggable(c, UIAction.drag_num, "g21");
-      g.makeDraggable(c, UIAction.drag_num, "g02");
-      g.makeDraggable(c, UIAction.drag_num, "g12");
-      g.makeDraggable(c, UIAction.drag_num, "g22");
-      l.updateBBox(g);
-      l.resetCursor();
-      l.makeLabel(c, null, "Testing text after grid");
-
-    } else if (i == 1) {
-      const l = stack.makeWindow(input_state, UIAction.placeholder, 200 + 20 * i, 100 + 10 * i, 200, 0, "Window: " + (i + 1));
-      l.makeText(c, null, "Testing cursor before grid. PLS lorem ipsum save me here i'm about to LOSE my mind!! Ha ha ha ha HA. What is happening to me. How do I take of my mask if I'm the mask? What does my face look like", text_wrap_width);
-      const g = Stack.makeGrid(l, null, 2, 1.0);
-      const w = MBBox.calcWidth(l.bbox) / 2.5;
-      const te = "some long debug text";
-      g.makeText(c, null, te, w);
-      g.makeText(c, null, te, w);
-      g.makeText(c, null, te, w);
-      g.makeText(c, null, te, w);
-      g.makeText(c, null, te, w);
-      g.makeText(c, null, te, w);
-      l.updateBBox(g);
-      l.resetCursor();
-      l.makeLabel(c, null, "Testing cursor after grid");
-    } else {
-      const l = stack.makeWindow(input_state, UIAction.placeholder, 200 + 20 * i, 100 + 10 * i, 0, 0, "Window: " + (i + 1));
-      l.makeText(c, null, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", text_wrap_width);
-    }
-  }
-
-  const ret = stack.requestAction(input_state)
-  const action = ret.action;
-
-  switch (action) {
-    case UIAction.increment:
-      num++;
-      break;
-    case UIAction.decrement:
-      num--;
-      break;
-    case UIAction.add_new_window:
-      num_windows++;
-      break;
-    case UIAction.drag_num:
-      num += input_state.mouse_delta_pos.x;
-      if (num < -100) num = -100;
-      if (num > 100) num = 100;
-      break;
-    case UIAction.drag_text_wrap_width:
-      text_wrap_width += input_state.mouse_delta_pos.x;
-      if (text_wrap_width < 0) text_wrap_width = 0;
-      break;
-    case UIAction.HIGH_drag_text_wrap_width:
-      text_wrap_width += 2 * input_state.mouse_delta_pos.x;
-      if (text_wrap_width < 0) text_wrap_width = 0;
-      break;
-  }
-
-  c.clearRect(0, 0, canvas.width, canvas.height);
-  stack.stack_render(c, input_state);
-  input_state.end();
-
-  const et = performance.now();
-  dt = et - st;
-  frame_time = et - last_time;
-  last_time = et;
-}
-
-setInterval(update, 1E3/120);

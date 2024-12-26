@@ -1,5 +1,5 @@
-import { REND, N, WidgetLoc, Cursor, BBox, MBBox, MColor, Widget, GlobalStyle, InputState } from "../gui.ts";
-import { Layout, Header } from "./layout.ts";
+import { REND, WidgetLoc, MBBox, MColor, Widget, GlobalStyle } from "../gui.ts";
+import { Layout } from "./layout.ts";
 
 export class Grid<ActionType> extends Layout<ActionType> implements Widget<ActionType> {
   columns: number;
@@ -13,9 +13,7 @@ export class Grid<ActionType> extends Layout<ActionType> implements Widget<Actio
   updateBBox(widget: Widget<ActionType>): void {
     const p = GlobalStyle.layout_commons.padding;
 
-    if (widget.bbox.left < this.bbox.left + p) {
-      this.bbox.left = widget.bbox.left - p;
-    } if (widget.bbox.top < this.bbox.top + p) {
+    if (widget.bbox.top < this.bbox.top + p) {
       this.bbox.top = widget.bbox.top - p;
     } if (widget.bbox.bottom > this.bbox.bottom - p) {
       this.bbox.bottom = widget.bbox.bottom + p;
@@ -28,7 +26,7 @@ export class Grid<ActionType> extends Layout<ActionType> implements Widget<Actio
 
     const col = this.widgets.length % this.columns;
     if (col == 0) { // ==> switch row
-      let bot = -1;
+      let bot = Number.NEGATIVE_INFINITY;
       for (let i = this.widgets.length - this.columns; i < this.widgets.length; i++) {
         if (this.widgets[i].bbox.bottom > bot)
           bot = this.widgets[i].bbox.bottom;

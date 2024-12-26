@@ -77,7 +77,7 @@ export class Draggable<ActionType> implements Widget<ActionType> {
     if (this.state == DraggableState.clicked || this.state == DraggableState.down)
       return { wants_focus: true, action: this.action_type };
     if (this.state == DraggableState.released)
-      return { wants_focus: false, action: this.action_type };
+      return { wants_focus: false, action: null };
 
     for (let widget of this.widgets) {
       const ret = widget.requestAction(input_state);
