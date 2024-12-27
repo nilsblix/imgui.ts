@@ -100,7 +100,7 @@ export class Text<ActionType> implements Widget<ActionType> {
     }
 
     if (this.state == TextState.hovered) {
-      return { wants_focus: false, action: this.action_type };
+      return { wants_focus: input_state.mouse_frame.clicked, action: this.action_type };
     }
 
     for (let widget of this.widgets) {

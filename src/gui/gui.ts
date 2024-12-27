@@ -14,6 +14,8 @@
 // * color widget pls
 // fine with user based popup data handling. don't really want to fix that
 // the user can fuck off and learn the intricasies of the based nirf_gui.
+// NEW
+// fix header drag on null action
 import { Stack } from "./stack.ts";
 
 export { Stack };
@@ -180,6 +182,9 @@ export class InputState {
   mouse_down: boolean;
   mouse_frame: {
     clicked: boolean;
+    time_at_click: number;
+    time_since_click: number;
+    double_clicked: boolean;
     released: boolean;
   };
 
@@ -190,9 +195,13 @@ export class InputState {
   window_positions: Cursor[];
   window_sizes: { width: number, height: number }[];
   window_active: boolean[];
+  window_minimised: boolean[];
   window_order: number[];
 
   active_widget_loc: number[];
+
+  private last_click_time: number;
+  private double_click_threshold: number;
 
   constructor(canvas: HTMLCanvasElement, x: number, y: number) {
     this.mouse_position = { x, y };
@@ -202,6 +211,9 @@ export class InputState {
     this.mouse_down = false;
     this.mouse_frame = {
       clicked: false,
+      time_at_click: -1,
+      time_since_click: 0,
+      double_clicked: false,
       released: false,
     };
 
@@ -212,8 +224,12 @@ export class InputState {
     this.window_positions = [];
     this.window_sizes = [];
     this.window_active = [];
+    this.window_minimised = [];
     this.window_order = [];
     this.active_widget_loc = [];
+
+    this.last_click_time = -1;
+    this.double_click_threshold = 500; // Double-click threshold in milliseconds
 
     canvas.addEventListener("mousemove", (e) => {
       const rect = canvas.getBoundingClientRect();
@@ -224,13 +240,27 @@ export class InputState {
     });
 
     canvas.addEventListener("mousedown", (e) => {
-      this.mouse_frame.clicked = true;
-      this.mouse_down = true;
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.x;
       const y = e.clientY - rect.y;
       this.mouse_down_position.x = x;
       this.mouse_down_position.y = y;
+
+      const now = performance.now();
+
+      this.mouse_frame.clicked = true;
+
+      if (this.last_click_time !== -1 && now - this.last_click_time < this.double_click_threshold) {
+        this.mouse_frame.double_clicked = true;
+      } else {
+        this.mouse_frame.double_clicked = false;
+        if (now - this.last_click_time >= this.double_click_threshold) {
+          this.last_click_time = -1;
+        }
+      }
+
+      this.last_click_time = now;
+      this.mouse_down = true;
     });
 
     canvas.addEventListener("mouseup", () => {
@@ -244,7 +274,25 @@ export class InputState {
     this.mouse_delta_pos.y = this.mouse_position.y - this.mouse_prev_position.y;
     this.mouse_prev_position.x = this.mouse_position.x;
     this.mouse_prev_position.y = this.mouse_position.y;
+
+    const now = performance.now();
+
+    if (this.mouse_frame.time_at_click !== -1) {
+      this.mouse_frame.time_since_click = now - this.mouse_frame.time_at_click;
+    }
+
+    if (this.mouse_frame.clicked) {
+      this.mouse_frame.time_at_click = now;
+    }
+
+    if (now - this.last_click_time >= this.double_click_threshold) {
+      this.mouse_frame.time_at_click = -1;
+      this.mouse_frame.time_since_click = 0;
+      this.last_click_time = -1;
+    }
+
     this.mouse_frame.clicked = false;
     this.mouse_frame.released = false;
+    this.mouse_frame.double_clicked = false;
   }
 }

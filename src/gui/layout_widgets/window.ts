@@ -39,11 +39,15 @@ class Header<ActionType> implements Widget<ActionType> {
     c.fillText(this.title, x, y);
   }
 
-  requestAction(input_state: InputState): { wants_focus: boolean, action: N<ActionType> } {
+  requestAction(input_state: InputState): {wants_focus: boolean, action: N<ActionType> } {
     // FIX: TODO: double click should dispatch default close action
-    const x = input_state.mouse_position.x;
-    x ?? null;
-    return { wants_focus: false, action: null };
+    const [x, y] = [input_state.mouse_position.x, input_state.mouse_position.y];
+
+    const inside = MBBox.isInside(this.bbox, x, y);
+    if (inside && input_state.mouse_frame.double_clicked)
+      return { wants_focus: false, action: this.action_type };
+
+    return {wants_focus: false, action: null };
   }
 
 }
@@ -92,7 +96,8 @@ class CloseButton<ActionType> extends Button<ActionType> implements Widget<Actio
 
 export class Window<ActionType> extends Layout<ActionType> implements Widget<ActionType> {
   min_size: { width: number, height: number };
-  constructor(c: REND, window_action_type: ActionType, resizeable_action_type: ActionType, close_btn_action_type: ActionType, loc: WidgetLoc, x: number, y: number, width: number, height: number, title: string, min_size: {width: number, height: number}) {
+  header_height: number;
+  constructor(c: REND, window_action_type: ActionType, header_action_type: ActionType, resizeable_action_type: ActionType, close_btn_action_type: ActionType, loc: WidgetLoc, x: number, y: number, width: number, height: number, title: string, min_size: {width: number, height: number}) {
     super(window_action_type, loc, x, y, width, height);
 
     const resize_loc = this.loc.concat([]);
@@ -110,9 +115,10 @@ export class Window<ActionType> extends Layout<ActionType> implements Widget<Act
     const header_loc = loc.concat([]);
     header_loc.push(this.widgets.length);
 
-    const header = new Header(header_loc, window_action_type, title, this.cursor.x, this.cursor.y, 10);
+    const header = new Header(header_loc, header_action_type, title, this.cursor.x, this.cursor.y, 10);
     this.widgets.push(header);
     this.cursor.y += MBBox.calcHeight(header.bbox) + GlobalStyle.layout_commons.widget_gap;
+    this.header_height = MBBox.calcHeight(header.bbox);
 
     this.min_size = min_size;
 
@@ -146,18 +152,20 @@ export class Window<ActionType> extends Layout<ActionType> implements Widget<Act
     c.restore();
   }
 
-  requestAction(input_state: InputState): { close: boolean, resize: boolean, iters: N<number>, wants_focus: boolean; action: N<ActionType>; } {
+  requestAction(input_state: InputState): { minimise: boolean, close: boolean, resize: boolean, iters: N<number>, wants_focus: boolean; action: N<ActionType>; } {
     const ret = super.requestAction(input_state);
 
     if (ret.iters == null)
-      return { close: false, resize: false, ...ret }
+      return { minimise: false, close: false, resize: false, ...ret }
 
+    if (this.widgets[ret.iters] instanceof Header)
+      return { minimise: ret.action != null, close: false, resize: false, ...ret };
     if (this.widgets[ret.iters] instanceof Resizeable)
-      return { close: false, resize: ret.action != null, ...ret };
+      return { minimise: false, close: false, resize: ret.action != null, ...ret };
     if (this.widgets[ret.iters] instanceof CloseButton)
-      return { close: ret.action != null, resize: false, ...ret };
+      return { minimise: false, close: ret.action != null, resize: false, ...ret };
 
-    return { close: false, resize: false, ...ret };
+    return { minimise: false, close: false, resize: false, ...ret };
 
   }
 

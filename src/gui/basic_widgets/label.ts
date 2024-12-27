@@ -61,7 +61,7 @@ export class Label<ActionType> implements Widget<ActionType> {
     }
 
     if (this.state == LabelState.hovered) {
-      return { wants_focus: false, action: this.action_type };
+      return { wants_focus: input_state.mouse_frame.clicked, action: this.action_type };
     }
 
     for (let widget of this.widgets) {

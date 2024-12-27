@@ -1,6 +1,6 @@
-import { REND, N, BBox, MBBox, Widget, InputState, WidgetLoc, GlobalStyle } from "./gui.ts";
+import { REND, N, BBox, MBBox, Widget, InputState, GlobalStyle } from "./gui.ts";
 import { Layout } from "./layout_widgets/layout.ts";
-import { Window, WindowResizeable, WindowCloseButton } from "./layout_widgets/window.ts";
+import { Window } from "./layout_widgets/window.ts";
 import { Grid } from "./layout_widgets/grid.ts";
 
 export class Stack<ActionType> { // root
@@ -25,7 +25,13 @@ export class Stack<ActionType> { // root
     }
   }
 
-  makeWindow(c: REND, input_state: InputState, window_action: ActionType, resizeable_action: ActionType, close_btn_action: ActionType,
+  makeWindow(c: REND, input_state: InputState,
+    action_config: {
+      window: ActionType,
+      header: ActionType,
+      resizeable: ActionType,
+      close_btn: ActionType,
+    },
     config: {
       title?: string,
       x?: number,
@@ -43,10 +49,11 @@ export class Stack<ActionType> { // root
       input_state.window_positions.push({ x: config.x ?? 0, y: config.y ?? 0 });
       input_state.window_sizes.push({ width: config.width ?? 200, height: config.height ?? 200 });
       input_state.window_active.push(true);
+      input_state.window_minimised.push(false);
       input_state.window_order.unshift(idx);
     }
 
-    const wind = new Window<ActionType>(c, window_action, resizeable_action, close_btn_action, [idx], input_state.window_positions[idx].x, input_state.window_positions[idx].y, input_state.window_sizes[idx].width, input_state.window_sizes[idx].height, config.title ?? "Hello, World!", {width: config.min_width ?? 50, height: config.min_height ?? 20});
+    const wind = new Window<ActionType>(c, action_config.window, action_config.header, action_config.resizeable, action_config.close_btn, [idx], input_state.window_positions[idx].x, input_state.window_positions[idx].y, input_state.window_sizes[idx].width, input_state.window_sizes[idx].height, config.title ?? "Hello, World!", {width: config.min_width ?? 50, height: config.min_height ?? 20});
     this.widgets.push(wind);
 
     return wind;
@@ -78,7 +85,12 @@ export class Stack<ActionType> { // root
         input_state.window_order.unshift(i);
       }
 
-      const res = ret as { close: boolean, resize: boolean, iters: N<number>, wants_focus: boolean, action: ActionType };
+      if (widget instanceof Window) {
+        if (input_state.window_minimised[i])
+          widget.bbox.bottom = widget.bbox.top + widget.header_height;
+      }
+
+      const res = ret as { minimise: boolean, close: boolean, resize: boolean, iters: N<number>, wants_focus: boolean, action: ActionType }
       if (widget instanceof Window && res.iters != null) {
         if (res.resize) {
           input_state.resizing_window = true;
@@ -92,6 +104,11 @@ export class Stack<ActionType> { // root
         if (res.close) {
           input_state.window_active[i] = false;
         }
+        if (res.minimise) {
+          input_state.window_minimised[i] = !input_state.window_minimised[i];
+        }
+        if (input_state.window_minimised[i])
+          widget.bbox.bottom = widget.bbox.top + MBBox.calcHeight(widget.widgets[res.iters].bbox);
       }
 
       document.body.style.cursor = "default";

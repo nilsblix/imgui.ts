@@ -43,7 +43,7 @@ function update() {
 
   const mst = performance.now();
 
-  const q = stack.makeWindow(c, input_state, null, UIAction.placeholder, null, {title: "debug info", width: 600});
+  const q = stack.makeWindow(c, input_state, {window: null, header: null, resizeable: null, close_btn: null}, {title: "debug info", width: 600, height: 400});
   q.makeLabel(c, null, "gui-time = " + dt.toFixed(2));
   q.makeLabel(c, null, "frt = " + frame_time.toFixed(4));
   q.makeLabel(c, null, "active loc = " + input_state.active_widget_loc);
@@ -53,10 +53,12 @@ function update() {
   q.makeLabel(c, null, "action_dt = " + action_time.toFixed(4));
   q.makeLabel(c, null, "render_dt = " + render_time.toFixed(4));
   q.makeLabel(c, null, "active windows = " + input_state.window_active);
+  q.makeLabel(c, null, "minim windows = " + input_state.window_minimised);
+  q.makeLabel(c, null, "frame act = " + JSON.stringify(input_state.mouse_frame));
 
   for (let i = 0; i < num_windows; i++) {
     if (i == 0) {
-      const l = stack.makeWindow(c, input_state, UIAction.placeholder, UIAction.placeholder, UIAction.placeholder, {title: "window 1", x: 100, y: 100});
+      const l = stack.makeWindow(c, input_state, {window: UIAction.placeholder, header: UIAction.placeholder, resizeable: UIAction.placeholder, close_btn: UIAction.placeholder}, {title: "window 1", x: 100, y: 100});
       l.makeButton(c, UIAction.increment, "Increment");
       l.makeButton(c, UIAction.decrement, "Decrement");
       l.makeLabel(c, null, "Drag some arbitrary number").bbox;
@@ -99,7 +101,7 @@ function update() {
       l.makeLabel(c, null, "testing after rgb")
 
     } else if (i == 1) {
-      const l = stack.makeWindow(c, input_state, UIAction.placeholder, UIAction.placeholder, UIAction.placeholder, {title: ":) " + (i + 1), x: 200 + 10*i, y: 100+10*i});
+      const l = stack.makeWindow(c, input_state, {window: UIAction.placeholder, header: UIAction.placeholder, resizeable: UIAction.placeholder, close_btn: UIAction.placeholder}, {title: ":) " + (i + 1), x: 200 + 10*i, y: 100+10*i});
       l.makeText(c, null, "Testing cursor before grid. PLS lorem ipsum save me here i'm about to LOSE my mind!! Ha ha ha ha HA. What is happening to me. How do I take of my mask if I'm the mask? What does my face look like");
       const g = gui.Stack.makeGrid(l, UIAction.placeholder, 2, 1.0);
       const w = gui.MBBox.calcWidth(l.bbox) / 2.5;
@@ -113,7 +115,7 @@ function update() {
       l.resetCursor();
       l.makeLabel(c, null, "Testing cursor after grid");
     } else {
-      const l = stack.makeWindow(c, input_state, UIAction.placeholder, UIAction.placeholder, UIAction.placeholder, {title: ":) " + (i + 1), x: 200 + 10*i, y: 100+10*i});
+      const l = stack.makeWindow(c, input_state, {window: UIAction.placeholder, header: UIAction.placeholder, resizeable: UIAction.placeholder, close_btn: UIAction.placeholder}, {title: ":) " + (i + 1), x: 200 + 10*i, y: 100+10*i});
       l.makeText(c, null, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", text_wrap_width);
     }
   }
