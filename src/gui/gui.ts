@@ -15,7 +15,9 @@
 // fine with user based popup data handling. don't really want to fix that
 // the user can fuck off and learn the intricasies of the based nirf_gui.
 // NEW
-// fix header drag on null action
+// * fix window height increasing wheh minimized and hover over close btn
+// * fix rendering such that pretty much nothing renders (tries to) when it is minimized
+// * COLOR widget pls
 import { Stack } from "./stack.ts";
 
 export { Stack };
