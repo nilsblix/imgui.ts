@@ -4,51 +4,6 @@ import { Button } from "../basic_widgets/button.ts";
 import { Draggable } from "../basic_widgets/draggable.ts";
 import { Text } from "../basic_widgets/text.ts";
 
-export class Header<ActionType> implements Widget<ActionType> {
-  bbox: BBox;
-  action_type: ActionType;
-  loc: WidgetLoc;
-  widgets: Widget<ActionType>[];
-  title: string;
-  title_font_size: number;
-
-  constructor(loc: WidgetLoc, action_type: ActionType, title: string, x: number, y: number, width: number) {
-    this.action_type = action_type;
-    this.title = title;
-    this.title_font_size = GlobalStyle.header_commons.font_size;
-    this.bbox = {
-      left: x,
-      top: y,
-      right: x + width,
-      bottom: y + GlobalStyle.header_commons.font_size,
-    }
-    this.loc = loc;
-    this.widgets = [];
-  }
-
-  render(c: REND) {
-    c.fillStyle = GlobalStyle.header_commons.bg_color;
-    c.fillRect(this.bbox.left, this.bbox.top, MBBox.calcWidth(this.bbox), MBBox.calcHeight(this.bbox));
-
-    c.font = this.title_font_size + "px " + GlobalStyle.font;
-    c.fillStyle = GlobalStyle.header_commons.color;
-    c.textBaseline = "middle";
-    c.textAlign = "left";
-
-    const x = this.bbox.left + GlobalStyle.layout_commons.widget_gap;
-    const y = (this.bbox.top + this.bbox.bottom) / 2 - MBBox.calcHeight(this.bbox) / 4;
-    c.fillText(this.title, x, y);
-  }
-
-  requestAction(input_state: InputState): { wants_focus: boolean, action: N<ActionType> } {
-    // FIX: TODO: double click should dispatch default close action
-    const x = input_state.mouse_position.x;
-    x ?? null;
-    return { wants_focus: false, action: null };
-  }
-
-}
-
 export abstract class Layout<ActionType> implements Widget<ActionType> {
   bbox: BBox;
   action_type: ActionType;
@@ -71,12 +26,13 @@ export abstract class Layout<ActionType> implements Widget<ActionType> {
   }
 
   render(c: REND): void {
-    for (let widget of this.widgets) {
+    for (let i = this.widgets.length - 1; i >= 0; i--) {
+      const widget = this.widgets[i];
       widget.render(c);
     }
   }
 
-  requestAction(input_state: InputState): { wants_focus: boolean, action: N<ActionType> } {
+  requestAction(input_state: InputState): { iters: N<number>, wants_focus: boolean, action: N<ActionType> } {
     const is_candidate_for_active = (widget: Widget<ActionType>) => {
       if (input_state.active_widget_loc.length === 0) return true;
       const activePath = input_state.active_widget_loc.slice(0, widget.loc.length);
@@ -91,29 +47,28 @@ export abstract class Layout<ActionType> implements Widget<ActionType> {
     const [x, y] = [input_state.mouse_position.x, input_state.mouse_position.y];
     const inside = MBBox.isInside(this.bbox, x, y);
 
-    if (!inside && JSON.stringify(input_state.active_widget_loc) == JSON.stringify([]))
-      return { wants_focus: false, action: null };
-
-    if (this.action_type == null) {
-      if (inside && input_state.mouse_frame.clicked)
-        return { wants_focus: true, action: null };
-    }
+    if (!inside && input_state.active_widget_loc.length == 0)
+      return { iters: null, wants_focus: false, action: null };
 
     if (!input_state.moving_window) {
-      for (let widget of this.widgets) {
+      for (let i = 0; i < this.widgets.length; i++) {
+        const widget = this.widgets[i];
         if (!is_candidate_for_active(widget)) {
           continue;
         }
         const ret = widget.requestAction(input_state);
-        if (ret.wants_focus || ret.action != null)
-          return ret;
+        if (ret.wants_focus || ret.action != null || (widget.widgets.length == 0 && MBBox.isInside(widget.bbox, x, y) && widget.action_type != null))
+          return { iters: i, ...ret};
       }
     }
 
     if (input_state.active_widget_loc.length > 1 && JSON.stringify(input_state.active_widget_loc) != JSON.stringify(this.loc)) {
       input_state.active_widget_loc = [];
-      return { wants_focus: false, action: null };
+      return { iters: null, wants_focus: false, action: null };
     }
+
+    if (this.action_type == null)
+      return { iters: null, wants_focus: false, action: null };
 
     if (inside && input_state.mouse_frame.clicked) {
       input_state.moving_window = true;
@@ -125,7 +80,7 @@ export abstract class Layout<ActionType> implements Widget<ActionType> {
       input_state.active_widget_loc = [];
     }
 
-    return { wants_focus: false, action: null };
+    return { iters: null, wants_focus: false, action: null };
 
   };
 

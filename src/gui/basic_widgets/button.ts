@@ -1,6 +1,6 @@
 import { REND, N, WidgetLoc, Cursor, BBox, MBBox, MColor, Widget, GlobalStyle, InputState } from "../gui.ts";
 
-const enum ButtonState {
+export const enum ButtonState {
   default,
   hovered,
   clicked,

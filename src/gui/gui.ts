@@ -128,6 +128,7 @@ export class MBBox {
 export type Widget<ActionType> = {
   bbox: BBox;
   loc: WidgetLoc;
+  action_type: ActionType;
   widgets: Widget<ActionType>[];
   render: (c: REND) => void;
   requestAction: (input_state: InputState) => {
@@ -146,6 +147,7 @@ export class GlobalStyle {
   static label = {
     font_size: 16,
     default_font_color: MColor.white,
+    inactive_font_color: MColor.fromHex("#808080FF"),
   };
   static button = {
     padding: 3,
@@ -187,6 +189,7 @@ export class InputState {
   window_offsets: Cursor[];
   window_positions: Cursor[];
   window_sizes: { width: number, height: number }[];
+  window_active: boolean[];
   window_order: number[];
 
   active_widget_loc: number[];
@@ -208,6 +211,7 @@ export class InputState {
     this.window_offsets = [];
     this.window_positions = [];
     this.window_sizes = [];
+    this.window_active = [];
     this.window_order = [];
     this.active_widget_loc = [];
 

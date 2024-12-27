@@ -96,7 +96,7 @@ export class Text<ActionType> implements Widget<ActionType> {
 
     if (MBBox.isInside(this.bbox, x, y) && this.action_type != null) {
       this.state = TextState.hovered;
-      input_state.active_widget_loc = this.loc;
+      // input_state.active_widget_loc = this.loc;
     }
 
     if (this.state == TextState.hovered) {

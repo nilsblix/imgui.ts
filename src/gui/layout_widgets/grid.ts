@@ -1,4 +1,4 @@
-import { REND, WidgetLoc, MBBox, MColor, Widget, GlobalStyle } from "../gui.ts";
+import { REND, WidgetLoc, MBBox, MColor, Widget, GlobalStyle, InputState, N } from "../gui.ts";
 import { Layout } from "./layout.ts";
 
 export class Grid<ActionType> extends Layout<ActionType> implements Widget<ActionType> {
@@ -48,6 +48,29 @@ export class Grid<ActionType> extends Layout<ActionType> implements Widget<Actio
     c.strokeRect(this.bbox.left, this.bbox.top, MBBox.calcWidth(this.bbox), MBBox.calcHeight(this.bbox));
 
     super.render(c);
+  }
+
+  requestAction(input_state: InputState): { iters: N<number>, wants_focus: boolean; action: N<ActionType>; } {
+    const is_candidate_for_active = (widget: Widget<ActionType>) => {
+      if (input_state.active_widget_loc.length === 0) return true;
+      const activePath = input_state.active_widget_loc.slice(0, widget.loc.length);
+      return activePath.length === widget.loc.length && activePath.every((v, i) => v === widget.loc[i]);
+    };
+
+    if (!input_state.moving_window) {
+      for (let i = 0; i < this.widgets.length; i++) {
+        const widget = this.widgets[i];
+        if (!is_candidate_for_active(widget)) {
+          continue;
+        }
+        const ret = widget.requestAction(input_state);
+        if (ret.wants_focus || ret.action != null)
+          return { iters: i, ...ret };
+      }
+    }
+
+    return { iters: null, wants_focus: false, action: null };
+
   }
 
 }

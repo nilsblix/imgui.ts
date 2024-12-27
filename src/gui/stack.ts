@@ -1,17 +1,15 @@
 import { REND, N, BBox, MBBox, Widget, InputState, WidgetLoc, GlobalStyle } from "./gui.ts";
 import { Layout } from "./layout_widgets/layout.ts";
-import { Window } from "./layout_widgets/window.ts";
+import { Window, WindowResizeable, WindowCloseButton } from "./layout_widgets/window.ts";
 import { Grid } from "./layout_widgets/grid.ts";
 
-export class Stack<ActionType> implements Widget<ActionType> { // root
+export class Stack<ActionType> { // root
   bbox: BBox;
   widgets: Widget<ActionType>[]; // is actually layouts
-  loc: WidgetLoc;
 
   constructor() {
     this.bbox = {left: 0, right: 0, top: 0, bottom: 0};
     this.widgets = [];
-    this.loc = [-1];
   }
 
   render(c: REND): void {
@@ -21,11 +19,13 @@ export class Stack<ActionType> implements Widget<ActionType> { // root
   stack_render(c: REND, input_state: InputState) {
     for (let o = input_state.window_order.length - 1; o >= 0; o--) {
       const i = input_state.window_order[o];
+      if (!input_state.window_active[i])
+        continue;
       this.widgets[i].render(c);
     }
   }
 
-  makeWindow(c: REND, input_state: InputState, window_action: ActionType, resizeable_action: ActionType,
+  makeWindow(c: REND, input_state: InputState, window_action: ActionType, resizeable_action: ActionType, close_btn_action: ActionType,
     config: {
       title?: string,
       x?: number,
@@ -42,10 +42,11 @@ export class Stack<ActionType> implements Widget<ActionType> { // root
       input_state.window_offsets.push({ x: 0, y: 0 });
       input_state.window_positions.push({ x: config.x ?? 0, y: config.y ?? 0 });
       input_state.window_sizes.push({ width: config.width ?? 200, height: config.height ?? 200 });
+      input_state.window_active.push(true);
       input_state.window_order.unshift(idx);
     }
 
-    const wind = new Window<ActionType>(c, window_action, resizeable_action, [idx], input_state.window_positions[idx].x, input_state.window_positions[idx].y, input_state.window_sizes[idx].width, input_state.window_sizes[idx].height, config.title ?? "Hello, World!", {width: config.min_width ?? 50, height: config.min_height ?? 20});
+    const wind = new Window<ActionType>(c, window_action, resizeable_action, close_btn_action, [idx], input_state.window_positions[idx].x, input_state.window_positions[idx].y, input_state.window_sizes[idx].width, input_state.window_sizes[idx].height, config.title ?? "Hello, World!", {width: config.min_width ?? 50, height: config.min_height ?? 20});
     this.widgets.push(wind);
 
     return wind;
@@ -61,38 +62,39 @@ export class Stack<ActionType> implements Widget<ActionType> { // root
     for (let o = 0; o < input_state.window_order.length; o++) {
       const i = input_state.window_order[o];
       const widget = this.widgets[i];
-      const ret = widget.requestAction(input_state);
 
       if (input_state.mouse_frame.released) {
         input_state.resizing_window = false;
         document.body.style.cursor = "default";
       }
 
-      if (widget instanceof Window) {
-        if (widget.resizeable != null) {
-          // if the window wants to be resized and it is resizeabele
-          if ((ret as { resize: boolean, wants_focus: boolean, action: ActionType }).resize) {
-            input_state.resizing_window = true;
-            document.body.style.cursor = "nwse-resize";
-          }
-          if (input_state.resizing_window && input_state.mouse_frame.clicked) {
-            input_state.window_order.splice(o, 1);
-            input_state.window_order.unshift(i);
-          }
-          if (input_state.resizing_window && JSON.stringify(input_state.active_widget_loc) == JSON.stringify(widget.resizeable.loc)) {
-            input_state.window_sizes[i].width += input_state.window_sizes[i].width < widget.min_size.width && input_state.mouse_delta_pos.x < 0 ? 0 : input_state.mouse_delta_pos.x;
-            input_state.window_sizes[i].height += input_state.window_sizes[i].height < widget.min_size.height && input_state.mouse_delta_pos.y < 0 ? 0 : input_state.mouse_delta_pos.y;
-            break;
-          }
-        }
-      }
+      if (!input_state.window_active[i])
+        continue;
 
-      document.body.style.cursor = "default";
+      const ret = widget.requestAction(input_state);
 
       if (ret.wants_focus) {
         input_state.window_order.splice(o, 1);
         input_state.window_order.unshift(i);
       }
+
+      const res = ret as { close: boolean, resize: boolean, iters: N<number>, wants_focus: boolean, action: ActionType };
+      if (widget instanceof Window && res.iters != null) {
+        if (res.resize) {
+          input_state.resizing_window = true;
+          document.body.style.cursor = "nwse-resize";
+        }
+        if (input_state.resizing_window && JSON.stringify(input_state.active_widget_loc) == JSON.stringify(widget.widgets[res.iters].loc)) {
+          input_state.window_sizes[i].width += input_state.window_sizes[i].width < widget.min_size.width && input_state.mouse_delta_pos.x < 0 ? 0 : input_state.mouse_delta_pos.x;
+          input_state.window_sizes[i].height += input_state.window_sizes[i].height < widget.min_size.height && input_state.mouse_delta_pos.y < 0 ? 0 : input_state.mouse_delta_pos.y;
+          break;
+        }
+        if (res.close) {
+          input_state.window_active[i] = false;
+        }
+      }
+
+      document.body.style.cursor = "default";
 
       if (input_state.moving_window && JSON.stringify(input_state.active_widget_loc) === JSON.stringify(widget.loc)) {
         if (input_state.mouse_frame.clicked) {
