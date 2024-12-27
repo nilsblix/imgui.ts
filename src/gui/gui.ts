@@ -229,7 +229,7 @@ export class InputState {
     this.active_widget_loc = [];
 
     this.last_click_time = -1;
-    this.double_click_threshold = 500; // Double-click threshold in milliseconds
+    this.double_click_threshold = 350; // Double-click threshold in milliseconds
 
     canvas.addEventListener("mousemove", (e) => {
       const rect = canvas.getBoundingClientRect();

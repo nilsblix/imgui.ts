@@ -58,7 +58,7 @@ export abstract class Layout<ActionType> implements Widget<ActionType> {
         }
         const ret = widget.requestAction(input_state);
         if (ret.wants_focus || ret.action != null || (widget.widgets.length == 0 && MBBox.isInside(widget.bbox, x, y) && widget.action_type != null))
-          return { iters: i, ...ret};
+          return { iters: i, wants_focus: ret.wants_focus, action: ret.action};
       }
     }
 

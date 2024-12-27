@@ -41,11 +41,14 @@ class Header<ActionType> implements Widget<ActionType> {
 
   requestAction(input_state: InputState): {wants_focus: boolean, action: N<ActionType> } {
     // FIX: TODO: double click should dispatch default close action
+    if (this.action_type == null)
+      return {wants_focus: false, action: null };
+
     const [x, y] = [input_state.mouse_position.x, input_state.mouse_position.y];
 
     const inside = MBBox.isInside(this.bbox, x, y);
     if (inside && input_state.mouse_frame.double_clicked)
-      return { wants_focus: false, action: this.action_type };
+      return { wants_focus: true, action: this.action_type };
 
     return {wants_focus: false, action: null };
   }
@@ -153,19 +156,45 @@ export class Window<ActionType> extends Layout<ActionType> implements Widget<Act
   }
 
   requestAction(input_state: InputState): { minimise: boolean, close: boolean, resize: boolean, iters: N<number>, wants_focus: boolean; action: N<ActionType>; } {
+    // const ret = super.requestAction(input_state);
+
+    // if (ret.iters == null)
+    //   return { minimise: false, close: false, resize: false, ...ret }
+
+    // if (this.widgets[ret.iters] instanceof Header)
+    //   return { minimise: ret.action != null, close: false, resize: false, ...ret };
+    // if (this.widgets[ret.iters] instanceof Resizeable)
+    //   return { minimise: false, close: false, resize: ret.action != null, ...ret };
+    // if (this.widgets[ret.iters] instanceof CloseButton)
+    //   return { minimise: false, close: ret.action != null, resize: false, ...ret };
+
+    return { minimise: false, close: false, resize: false, iters: null, wants_focus: false, action: null };
+
+  }
+
+  requestWindowAction(minimised: boolean, input_state: InputState): { minimise: boolean, close: boolean, resize: boolean, iters: N<number>, wants_focus: boolean; action: N<ActionType>; } {
     const ret = super.requestAction(input_state);
 
-    if (ret.iters == null)
+    if (ret.iters == null) // => no widget has been found
       return { minimise: false, close: false, resize: false, ...ret }
+
+    // from here on out a widget wants to do something
+    // if part of a standard window flag ==> do some standard window action (close, mini etc)
+    // else if not mini ==> just return the action
+
+    console.log(ret.iters);
 
     if (this.widgets[ret.iters] instanceof Header)
       return { minimise: ret.action != null, close: false, resize: false, ...ret };
-    if (this.widgets[ret.iters] instanceof Resizeable)
+    if (this.widgets[ret.iters] instanceof Resizeable && !minimised)
       return { minimise: false, close: false, resize: ret.action != null, ...ret };
     if (this.widgets[ret.iters] instanceof CloseButton)
       return { minimise: false, close: ret.action != null, resize: false, ...ret };
+    else if (!minimised)
+      return { minimise: false, close: false, resize: false, ...ret };
 
-    return { minimise: false, close: false, resize: false, ...ret };
+    // window is minimised ==> this cannot return anything
+    return { minimise: false, close: false, resize: false, iters: null, wants_focus: false, action: null };
 
   }
 

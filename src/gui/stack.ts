@@ -19,6 +19,7 @@ export class Stack<ActionType> { // root
   stack_render(c: REND, input_state: InputState) {
     for (let o = input_state.window_order.length - 1; o >= 0; o--) {
       const i = input_state.window_order[o];
+      const widget = this.widgets[i];
       if (!input_state.window_active[i])
         continue;
       this.widgets[i].render(c);
@@ -65,7 +66,20 @@ export class Stack<ActionType> { // root
     return grid;
   }
 
+  endEditing(input_state: InputState): void {
+    for (let o = input_state.window_order.length - 1; o >= 0; o--) {
+      const i = input_state.window_order[o];
+      const widget = this.widgets[i];
+      if (!input_state.window_active[i])
+        continue;
+      if (input_state.window_minimised[i] && widget instanceof Window)
+        widget.bbox.bottom = widget.bbox.top + widget.header_height;
+    }
+  }
+
   requestAction(input_state: InputState): { wants_focus: boolean, action: N<ActionType> } {
+    this.endEditing(input_state);
+
     for (let o = 0; o < input_state.window_order.length; o++) {
       const i = input_state.window_order[o];
       const widget = this.widgets[i];
@@ -78,16 +92,11 @@ export class Stack<ActionType> { // root
       if (!input_state.window_active[i])
         continue;
 
-      const ret = widget.requestAction(input_state);
+      const ret = widget instanceof Window ? widget.requestWindowAction(input_state.window_minimised[i], input_state) : widget.requestAction(input_state);
 
       if (ret.wants_focus) {
         input_state.window_order.splice(o, 1);
         input_state.window_order.unshift(i);
-      }
-
-      if (widget instanceof Window) {
-        if (input_state.window_minimised[i])
-          widget.bbox.bottom = widget.bbox.top + widget.header_height;
       }
 
       const res = ret as { minimise: boolean, close: boolean, resize: boolean, iters: N<number>, wants_focus: boolean, action: ActionType }

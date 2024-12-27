@@ -30,7 +30,7 @@ let render_time = -1;
 
 let text_wrap_width = 400;
 
-let bg_color: gui.Color = { r: gui.MColor.white.r, g: gui.MColor.white.g, b: gui.MColor.white.b, a: 1 };
+let bg_color: gui.Color = gui.MColor.fromHex("#738C99");
 
 function update() {
   document.body.style.backgroundColor = gui.MColor.string(bg_color);
@@ -43,7 +43,7 @@ function update() {
 
   const mst = performance.now();
 
-  const q = stack.makeWindow(c, input_state, {window: null, header: null, resizeable: null, close_btn: null}, {title: "debug info", width: 600, height: 400});
+  const q = stack.makeWindow(c, input_state, {window: UIAction.placeholder, header: UIAction.placeholder, resizeable: null, close_btn: null}, {title: "debug info", width: 600, height: 400});
   q.makeLabel(c, null, "gui-time = " + dt.toFixed(2));
   q.makeLabel(c, null, "frt = " + frame_time.toFixed(4));
   q.makeLabel(c, null, "active loc = " + input_state.active_widget_loc);
@@ -61,8 +61,11 @@ function update() {
       const l = stack.makeWindow(c, input_state, {window: UIAction.placeholder, header: UIAction.placeholder, resizeable: UIAction.placeholder, close_btn: UIAction.placeholder}, {title: "window 1", x: 100, y: 100});
       l.makeButton(c, UIAction.increment, "Increment");
       l.makeButton(c, UIAction.decrement, "Decrement");
-      l.makeLabel(c, null, "Drag some arbitrary number").bbox;
+      const DRAG_SOME_NUMBER = l.makeLabel(c, null, "Drag some arbitrary number:");
+      l.cursor.y = DRAG_SOME_NUMBER.bbox.top;
+      l.cursor.x = DRAG_SOME_NUMBER.bbox.right + gui.GlobalStyle.layout_commons.widget_gap;
       l.makeDraggable(c, UIAction.drag_num, "number = " + num);
+      l.resetCursor();
       l.makeDraggable(c, UIAction.drag_text_wrap_width, "Wrap width: " + text_wrap_width);
       l.makeLabel(c, null, " ");
       l.makeButton(c, UIAction.add_new_window, "Add a window. " + num_windows);
