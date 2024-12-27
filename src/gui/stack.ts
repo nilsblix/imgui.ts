@@ -2,6 +2,7 @@ import { REND, N, BBox, MBBox, Widget, InputState, GlobalStyle } from "./gui.ts"
 import { Layout } from "./layout_widgets/layout.ts";
 import { Window } from "./layout_widgets/window.ts";
 import { Grid } from "./layout_widgets/grid.ts";
+import { WindowHeader } from "./layout_widgets/window.ts";
 
 export class Stack<ActionType> { // root
   bbox: BBox;
@@ -19,7 +20,6 @@ export class Stack<ActionType> { // root
   stack_render(c: REND, input_state: InputState) {
     for (let o = input_state.window_order.length - 1; o >= 0; o--) {
       const i = input_state.window_order[o];
-      const widget = this.widgets[i];
       if (!input_state.window_active[i])
         continue;
       this.widgets[i].render(c);
@@ -67,13 +67,19 @@ export class Stack<ActionType> { // root
   }
 
   endEditing(input_state: InputState): void {
-    for (let o = input_state.window_order.length - 1; o >= 0; o--) {
-      const i = input_state.window_order[o];
+    for (let i = 0; i < this.widgets.length; i++) {
       const widget = this.widgets[i];
       if (!input_state.window_active[i])
         continue;
-      if (input_state.window_minimised[i] && widget instanceof Window)
+      if (input_state.window_minimised[i] && widget instanceof Window) {
         widget.bbox.bottom = widget.bbox.top + widget.header_height;
+        for (let idx = 0; idx <= 2; idx++) {
+          if (widget.widgets[idx] instanceof WindowHeader) {
+            (widget.widgets[idx] as WindowHeader<ActionType>).window_state = "minimised";
+            break;
+          }
+        }
+      }
     }
   }
 
@@ -119,6 +125,7 @@ export class Stack<ActionType> { // root
         if (input_state.window_minimised[i])
           widget.bbox.bottom = widget.bbox.top + MBBox.calcHeight(widget.widgets[res.iters].bbox);
       }
+
 
       document.body.style.cursor = "default";
 

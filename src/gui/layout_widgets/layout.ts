@@ -3,6 +3,7 @@ import { Label } from "../basic_widgets/label.ts";
 import { Button } from "../basic_widgets/button.ts";
 import { Draggable } from "../basic_widgets/draggable.ts";
 import { Text } from "../basic_widgets/text.ts";
+import { WindowHeader } from "./window.ts";
 
 export abstract class Layout<ActionType> implements Widget<ActionType> {
   bbox: BBox;
@@ -57,7 +58,7 @@ export abstract class Layout<ActionType> implements Widget<ActionType> {
           continue;
         }
         const ret = widget.requestAction(input_state);
-        if (ret.wants_focus || ret.action != null || (widget.widgets.length == 0 && MBBox.isInside(widget.bbox, x, y) && widget.action_type != null))
+        if (ret.wants_focus || ret.action != null || (widget.widgets.length == 0 && MBBox.isInside(widget.bbox, x, y) && widget.action_type != null && !(widget instanceof WindowHeader)))
           return { iters: i, wants_focus: ret.wants_focus, action: ret.action};
       }
     }

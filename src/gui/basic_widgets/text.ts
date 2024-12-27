@@ -86,6 +86,7 @@ export class Text<ActionType> implements Widget<ActionType> {
 
     // TEMP DEBUG
     // c.strokeStyle = MColor.string(MColor.white);
+    // c.lineWidth = 1;
     // c.strokeRect(this.bbox.left, this.bbox.top, MBBox.calcWidth(this.bbox), MBBox.calcHeight(this.bbox));
   }
 
@@ -96,7 +97,6 @@ export class Text<ActionType> implements Widget<ActionType> {
 
     if (MBBox.isInside(this.bbox, x, y) && this.action_type != null) {
       this.state = TextState.hovered;
-      // input_state.active_widget_loc = this.loc;
     }
 
     if (this.state == TextState.hovered) {

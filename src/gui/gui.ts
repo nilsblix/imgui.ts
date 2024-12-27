@@ -160,6 +160,7 @@ export class GlobalStyle {
     widget_gap: 5,
     bg_color: MColor.fromHex("#0F0F0FF0"),
     border: "#6E6E8080",
+    border_width: 1,
   }
   static header_commons = {
     color: "#ffffff",
@@ -167,6 +168,7 @@ export class GlobalStyle {
     font_size: 16,
   };
   static window = {
+    minimized_header_bg: "#9F9F9F09",
   }
   static grid = {
   }
@@ -229,7 +231,7 @@ export class InputState {
     this.active_widget_loc = [];
 
     this.last_click_time = -1;
-    this.double_click_threshold = 350; // Double-click threshold in milliseconds
+    this.double_click_threshold = 300; // Double-click threshold in milliseconds
 
     canvas.addEventListener("mousemove", (e) => {
       const rect = canvas.getBoundingClientRect();

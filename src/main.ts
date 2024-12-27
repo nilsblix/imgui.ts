@@ -43,7 +43,7 @@ function update() {
 
   const mst = performance.now();
 
-  const q = stack.makeWindow(c, input_state, {window: UIAction.placeholder, header: UIAction.placeholder, resizeable: null, close_btn: null}, {title: "debug info", width: 600, height: 400});
+  const q = stack.makeWindow(c, input_state, {window: UIAction.placeholder, header: UIAction.placeholder, resizeable: UIAction.placeholder, close_btn: null}, {title: "debug info", width: 600, height: 400});
   q.makeLabel(c, null, "gui-time = " + dt.toFixed(2));
   q.makeLabel(c, null, "frt = " + frame_time.toFixed(4));
   q.makeLabel(c, null, "active loc = " + input_state.active_widget_loc);
@@ -58,13 +58,13 @@ function update() {
 
   for (let i = 0; i < num_windows; i++) {
     if (i == 0) {
-      const l = stack.makeWindow(c, input_state, {window: UIAction.placeholder, header: UIAction.placeholder, resizeable: UIAction.placeholder, close_btn: UIAction.placeholder}, {title: "window 1", x: 100, y: 100});
+      const l = stack.makeWindow(c, input_state, {window: UIAction.placeholder, header: UIAction.placeholder, resizeable: UIAction.placeholder, close_btn: null}, {title: "window 1", x: 100, y: 100});
       l.makeButton(c, UIAction.increment, "Increment");
       l.makeButton(c, UIAction.decrement, "Decrement");
       const DRAG_SOME_NUMBER = l.makeLabel(c, null, "Drag some arbitrary number:");
       l.cursor.y = DRAG_SOME_NUMBER.bbox.top;
       l.cursor.x = DRAG_SOME_NUMBER.bbox.right + gui.GlobalStyle.layout_commons.widget_gap;
-      l.makeDraggable(c, UIAction.drag_num, "number = " + num);
+      l.makeDraggable(c, UIAction.drag_num, "number = " + num).bbox.bottom = DRAG_SOME_NUMBER.bbox.bottom;
       l.resetCursor();
       l.makeDraggable(c, UIAction.drag_text_wrap_width, "Wrap width: " + text_wrap_width);
       l.makeLabel(c, null, " ");

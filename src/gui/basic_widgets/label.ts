@@ -57,7 +57,6 @@ export class Label<ActionType> implements Widget<ActionType> {
 
     if (MBBox.isInside(this.bbox, x, y) && this.action_type != null) {
       this.state = LabelState.hovered;
-      // input_state.active_widget_loc = this.loc;
     }
 
     if (this.state == LabelState.hovered) {

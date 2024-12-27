@@ -10,6 +10,7 @@ class Header<ActionType> implements Widget<ActionType> {
   widgets: Widget<ActionType>[];
   title: string;
   title_font_size: number;
+  window_state: "open" | "minimised";
 
   constructor(loc: WidgetLoc, action_type: ActionType, title: string, x: number, y: number, width: number) {
     this.action_type = action_type;
@@ -23,10 +24,11 @@ class Header<ActionType> implements Widget<ActionType> {
     }
     this.loc = loc;
     this.widgets = [];
+    this.window_state = "open";
   }
 
   render(c: REND) {
-    c.fillStyle = GlobalStyle.header_commons.bg_color;
+    c.fillStyle = this.window_state == "open" ? GlobalStyle.header_commons.bg_color : GlobalStyle.window.minimized_header_bg;
     c.fillRect(this.bbox.left, this.bbox.top, MBBox.calcWidth(this.bbox), MBBox.calcHeight(this.bbox));
 
     c.font = this.title_font_size + "px " + GlobalStyle.font;
@@ -40,7 +42,6 @@ class Header<ActionType> implements Widget<ActionType> {
   }
 
   requestAction(input_state: InputState): {wants_focus: boolean, action: N<ActionType> } {
-    // FIX: TODO: double click should dispatch default close action
     if (this.action_type == null)
       return {wants_focus: false, action: null };
 
@@ -48,7 +49,7 @@ class Header<ActionType> implements Widget<ActionType> {
 
     const inside = MBBox.isInside(this.bbox, x, y);
     if (inside && input_state.mouse_frame.double_clicked)
-      return { wants_focus: true, action: this.action_type };
+      return { wants_focus: false, action: this.action_type };
 
     return {wants_focus: false, action: null };
   }
@@ -139,37 +140,26 @@ export class Window<ActionType> extends Layout<ActionType> implements Widget<Act
   render(c: REND): void {
     c.save();
 
+    const p = GlobalStyle.layout_commons.border_width;
     c.beginPath();
     c.rect(this.bbox.left, this.bbox.top, MBBox.calcWidth(this.bbox), MBBox.calcHeight(this.bbox));
-    c.clip();
     c.closePath();
 
     c.fillStyle = MColor.string(GlobalStyle.layout_commons.bg_color);
     c.fillRect(this.bbox.left, this.bbox.top, MBBox.calcWidth(this.bbox), MBBox.calcHeight(this.bbox));
 
     c.strokeStyle = GlobalStyle.layout_commons.border;
-    c.lineWidth = 1;
-    c.strokeRect(this.bbox.left, this.bbox.top, MBBox.calcWidth(this.bbox), MBBox.calcHeight(this.bbox));
+    c.lineWidth = p;
+    c.strokeRect(this.bbox.left - 0.5 * p, this.bbox.top - 0.5 * p, MBBox.calcWidth(this.bbox) + p, MBBox.calcHeight(this.bbox) + p);
+    c.clip();
     super.render(c);
 
     c.restore();
   }
 
   requestAction(input_state: InputState): { minimise: boolean, close: boolean, resize: boolean, iters: N<number>, wants_focus: boolean; action: N<ActionType>; } {
-    // const ret = super.requestAction(input_state);
-
-    // if (ret.iters == null)
-    //   return { minimise: false, close: false, resize: false, ...ret }
-
-    // if (this.widgets[ret.iters] instanceof Header)
-    //   return { minimise: ret.action != null, close: false, resize: false, ...ret };
-    // if (this.widgets[ret.iters] instanceof Resizeable)
-    //   return { minimise: false, close: false, resize: ret.action != null, ...ret };
-    // if (this.widgets[ret.iters] instanceof CloseButton)
-    //   return { minimise: false, close: ret.action != null, resize: false, ...ret };
-
+    input_state.mouse_position.x;
     return { minimise: false, close: false, resize: false, iters: null, wants_focus: false, action: null };
-
   }
 
   requestWindowAction(minimised: boolean, input_state: InputState): { minimise: boolean, close: boolean, resize: boolean, iters: N<number>, wants_focus: boolean; action: N<ActionType>; } {
@@ -182,7 +172,6 @@ export class Window<ActionType> extends Layout<ActionType> implements Widget<Act
     // if part of a standard window flag ==> do some standard window action (close, mini etc)
     // else if not mini ==> just return the action
 
-    console.log(ret.iters);
 
     if (this.widgets[ret.iters] instanceof Header)
       return { minimise: ret.action != null, close: false, resize: false, ...ret };
@@ -195,10 +184,10 @@ export class Window<ActionType> extends Layout<ActionType> implements Widget<Act
 
     // window is minimised ==> this cannot return anything
     return { minimise: false, close: false, resize: false, iters: null, wants_focus: false, action: null };
-
   }
 
 }
 
 export { Resizeable as WindowResizeable };
 export { CloseButton as WindowCloseButton };
+export { Header as WindowHeader };
