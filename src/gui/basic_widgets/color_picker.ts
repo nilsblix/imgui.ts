@@ -1,4 +1,4 @@
-import { REND, N, WidgetLoc, Cursor, BBox, MBBox, Color, MColor, Widget, GlobalStyle, InputState } from "../gui.ts";
+import { REND, N, WidgetLoc, Cursor, BBox, MBBox, Color, MColor, Widget, InputState } from "../gui.ts";
 
 export class ColorPickerRect<ActionType> implements Widget<ActionType> {
   bbox: BBox;
@@ -54,8 +54,6 @@ export class ColorPickerRect<ActionType> implements Widget<ActionType> {
     c.stroke();
     c.closePath();
 
-    console.log(hsv);
-
   }
 
   /**
@@ -74,7 +72,7 @@ export class ColorPickerRect<ActionType> implements Widget<ActionType> {
       const width = MBBox.calcWidth(this.bbox);
       const height = MBBox.calcHeight(this.bbox);
 
-      const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1);
+      const clamp01 = (v: number) => Math.min(Math.max(v, 0.0015), 0.9990);
 
       const sat_scalar = clamp01((x - this.bbox.left) / width);
       const bright_scalar = clamp01(1 - (y - this.bbox.top) / height);

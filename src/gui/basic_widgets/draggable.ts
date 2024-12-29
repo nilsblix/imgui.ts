@@ -16,13 +16,13 @@ export class Draggable<ActionType> implements Widget<ActionType> {
   text: string;
   state: DraggableState;
 
-  constructor(c: REND, action_type: ActionType, loc: WidgetLoc, cursor: Cursor, text: string) {
+  constructor(c: REND, action_type: ActionType, loc: WidgetLoc, cursor: Cursor, text: string, fixed_width?: number) {
     c.font = GlobalStyle.button.font_size + "px " + GlobalStyle.font;
     c.textBaseline = "middle";
     const m = c.measureText(text);
     const width = m.width;
     const height = m.fontBoundingBoxAscent + m.fontBoundingBoxDescent;
-    this.bbox = { left: cursor.x, top: cursor.y, right: cursor.x + width + 2 * GlobalStyle.button.padding, bottom: cursor.y + height + 2 * GlobalStyle.button.padding };
+    this.bbox = { left: cursor.x, top: cursor.y, right: cursor.x + (!fixed_width ? width + 2 * GlobalStyle.button.padding : fixed_width), bottom: cursor.y + height + 2 * GlobalStyle.button.padding };
     this.text = text;
     this.action_type = action_type;
     this.state = DraggableState.default;
@@ -44,15 +44,14 @@ export class Draggable<ActionType> implements Widget<ActionType> {
     c.fillStyle = color;
     c.fillRect(this.bbox.left, this.bbox.top, MBBox.calcWidth(this.bbox), MBBox.calcHeight(this.bbox));
 
-    c.font = GlobalStyle.button.font_size + "px " + GlobalStyle.font;
+    c.font = "lighter " + GlobalStyle.button.font_size + "px " + GlobalStyle.font;
     c.fillStyle = MColor.string(MColor.white);
     c.textBaseline = "middle";
     c.textAlign = "center";
 
-    const x = (this.bbox.left + this.bbox.right) / 2;
-    const y = (this.bbox.top + this.bbox.bottom) / 2 - GlobalStyle.button.font_size * 0.25; // Adjust 0.3 as needed
+    const x = Math.round((this.bbox.left + this.bbox.right) / 2) + 0.5;
+    const y = Math.round((this.bbox.top + this.bbox.bottom) / 2 - GlobalStyle.button.font_size * 0.25) + 0.5;
     c.fillText(this.text, x, y);
-
 
   }
 

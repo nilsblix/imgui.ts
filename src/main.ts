@@ -14,6 +14,8 @@ enum UIAction {
   bg_color_r, bg_color_g, bg_color_b,
   toggle_window_1,
   change_bg_color_with_picker,
+  change_bg_color_hue, change_bg_color_saturation, change_bg_color_brightness,
+  change_bg_color_r, change_bg_color_g, change_bg_color_b,
 }
 
 const c = <gui.REND>gui.canvas.getContext("2d");
@@ -57,11 +59,38 @@ function update() {
   q.makeLabel(c, null, "minim windows = " + input_state.window_minimised);
   q.makeLabel(c, null, "frame act = " + JSON.stringify(input_state.mouse_frame));
 
-  const bg_color_picker = q.makeColorPickerRect(UIAction.change_bg_color_with_picker, bg_color, 400, 200);
+  const picker_wind = stack.makeWindow(c, input_state, { window: UIAction.placeholder, header: null, resizeable: null, close_btn: null }, { title: "color picker test", width: 300, height: 450, x: 800, y: 100 });
+  const picker_wind_usable_width = gui.MBBox.calcWidth(picker_wind.bbox) - 2 * gui.GlobalStyle.layout_commons.padding - 2 * gui.GlobalStyle.layout_commons.widget_gap;
+  const bg_color_picker = picker_wind.makeColorPickerRect(UIAction.change_bg_color_with_picker, bg_color, picker_wind_usable_width + 2 * gui.GlobalStyle.layout_commons.widget_gap, 300);
+
+  const hsv_h = picker_wind.makeDraggable(c, UIAction.change_bg_color_hue, "H: " + Math.round(gui.MColor.toHSVA(bg_color).h), {width: 1/3 * picker_wind_usable_width});
+  picker_wind.cursor.x = hsv_h.bbox.right + gui.GlobalStyle.layout_commons.widget_gap;
+  picker_wind.cursor.y = hsv_h.bbox.top;
+
+  const hsv_s = picker_wind.makeDraggable(c, UIAction.change_bg_color_saturation, "S: " + gui.round(gui.MColor.toHSVA(bg_color).s, 2), {width: 1/3 * picker_wind_usable_width});
+  picker_wind.cursor.x = hsv_s.bbox.right + gui.GlobalStyle.layout_commons.widget_gap;
+  picker_wind.cursor.y = hsv_s.bbox.top;
+
+  const hsv_v = picker_wind.makeDraggable(c, UIAction.change_bg_color_brightness, "V: " + gui.round(gui.MColor.toHSVA(bg_color).v, 2), {width: 1/3 * picker_wind_usable_width});
+  picker_wind.cursor.x = hsv_v.bbox.right + gui.GlobalStyle.layout_commons.widget_gap;
+  picker_wind.cursor.y = hsv_v.bbox.top;
+
+  picker_wind.resetCursor();
+
+  const rgb_r = picker_wind.makeDraggable(c, UIAction.change_bg_color_r, "R: " + Math.round(bg_color.r), {width: 1/3 * picker_wind_usable_width});
+  picker_wind.cursor.x = rgb_r.bbox.right + gui.GlobalStyle.layout_commons.widget_gap;
+  picker_wind.cursor.y = rgb_r.bbox.top;
+
+  const rgb_g = picker_wind.makeDraggable(c, UIAction.change_bg_color_g, "G: " + Math.round(bg_color.g), {width: 1/3 * picker_wind_usable_width});
+  picker_wind.cursor.x = rgb_g.bbox.right + gui.GlobalStyle.layout_commons.widget_gap;
+  picker_wind.cursor.y = rgb_g.bbox.top;
+
+  picker_wind.makeDraggable(c, UIAction.change_bg_color_b, "B: " + Math.round(bg_color.b), {width: 1/3 * picker_wind_usable_width});
 
   for (let i = 0; i < num_windows; i++) {
     if (i == 0) {
       const l = stack.makeWindow(c, input_state, {window: UIAction.placeholder, header: UIAction.placeholder, resizeable: UIAction.placeholder, close_btn: null}, {title: "window 1", x: 100, y: 100});
+      const l_usable_width = gui.MBBox.calcWidth(l.bbox) - 2 * gui.GlobalStyle.layout_commons.padding;
       l.makeButton(c, UIAction.increment, "Increment");
       l.makeButton(c, UIAction.decrement, "Decrement");
       const DRAG_SOME_NUMBER = l.makeLabel(c, null, "Drag some arbitrary number:");
@@ -69,7 +98,7 @@ function update() {
       l.cursor.x = DRAG_SOME_NUMBER.bbox.right + gui.GlobalStyle.layout_commons.widget_gap;
       l.makeDraggable(c, UIAction.drag_num, "number = " + num).bbox.bottom = DRAG_SOME_NUMBER.bbox.bottom;
       l.resetCursor();
-      l.makeDraggable(c, UIAction.drag_text_wrap_width, "Wrap width: " + text_wrap_width);
+      l.makeDraggable(c, UIAction.drag_text_wrap_width, "Wrap width: " + text_wrap_width, {width: l_usable_width});
       l.makeLabel(c, null, " ");
       l.makeButton(c, UIAction.add_new_window, "Add a window. " + num_windows);
       // l.makeText(c, UIAction.increment, "Some more standard placeholder text that isn't some weird loremm ipsum shit that everyone is tired of. Wow have I offended someone with that statement. Fuck you those that are offended. I don't give a fuck", text_wrap_width);
@@ -96,13 +125,14 @@ function update() {
 
       l.makeLabel(c, null, "* bg color: ");
       const padd = " ";
-      const bg1 = l.makeDraggable(c, UIAction.bg_color_r, padd + "R: " + bg_color.r + padd);
-      l.cursor.x = bg1.bbox.right + 4;
+      const color_draggable_width = 1/3 * (l_usable_width - 2 * gui.GlobalStyle.layout_commons.widget_gap)
+      const bg1 = l.makeDraggable(c, UIAction.bg_color_r, padd + "R: " + bg_color.r + padd, {width: color_draggable_width});
+      l.cursor.x = bg1.bbox.right + gui.GlobalStyle.layout_commons.widget_gap;
       l.cursor.y = bg1.bbox.top;
-      const bg2 = l.makeDraggable(c, UIAction.bg_color_g, padd + "G: " + bg_color.g + padd);
-      l.cursor.x = bg2.bbox.right + 4;
+      const bg2 = l.makeDraggable(c, UIAction.bg_color_g, padd + "G: " + bg_color.g + padd, {width: color_draggable_width});
+      l.cursor.x = bg2.bbox.right + gui.GlobalStyle.layout_commons.widget_gap;
       l.cursor.y = bg2.bbox.top;
-      l.makeDraggable(c, UIAction.bg_color_b, padd + "B: " + bg_color.b + padd);
+      l.makeDraggable(c, UIAction.bg_color_b, padd + "B: " + bg_color.b + padd, {width: color_draggable_width});
       l.resetCursor();
       l.makeLabel(c, null, "testing after rgb")
 
@@ -173,6 +203,30 @@ function update() {
       break;
     case UIAction.change_bg_color_with_picker:
       bg_color = bg_color_picker.color;
+      break;
+    case UIAction.change_bg_color_hue:
+      let {h: h1, s: s1, v: v1, a: a1} = gui.MColor.toHSVA(bg_color);
+      h1 += 2 * input_state.mouse_delta_pos.x;
+      bg_color = gui.MColor.fromHSVA(h1, s1, v1, a1);
+      break;
+    case UIAction.change_bg_color_saturation:
+      let {h: h2, s: s2, v: v2, a: a2} = gui.MColor.toHSVA(bg_color);
+      s2 += 0.005 * input_state.mouse_delta_pos.x;
+      bg_color = gui.MColor.fromHSVA(h2, s2, v2, a2);
+      break;
+    case UIAction.change_bg_color_brightness:
+      let {h: h3, s: s3, v: v3, a: a3} = gui.MColor.toHSVA(bg_color);
+      v3 += 0.005 * input_state.mouse_delta_pos.x;
+      bg_color = gui.MColor.fromHSVA(h3, s3, v3, a3);
+      break;
+    case UIAction.change_bg_color_r:
+      bg_color.r += input_state.mouse_delta_pos.x;
+      break;
+    case UIAction.change_bg_color_g:
+      bg_color.g += input_state.mouse_delta_pos.x;
+      break;
+    case UIAction.change_bg_color_b:
+      bg_color.b += input_state.mouse_delta_pos.x;
       break;
   }
 

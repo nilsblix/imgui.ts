@@ -18,6 +18,9 @@
 // * fix window height increasing wheh minimized and hover over close btn
 // * fix rendering such that pretty much nothing renders (tries to) when it is minimized
 // * COLOR widget pls
+// NEW
+// Need to to stack.createPopup
+// AND stack.createColorPickerPopup
 import { Stack } from "./stack.ts";
 
 export { Stack };
@@ -30,6 +33,14 @@ export function updateCanvasSizing() {
   canvas.height = window.innerHeight;
   canvas.style.width = window.innerWidth + "px";
   canvas.style.height = window.innerHeight + "px";
+}
+
+/**
+* @param e num decimals to round of to
+* @returns
+*/
+export function round(x: number, e: number): number {
+  return Math.floor(x * 10 ** e) / (10 ** e);
 }
 
 export type REND = CanvasRenderingContext2D;
@@ -54,6 +65,8 @@ export class MColor {
   static g_18 = { r: 18, g: 19, b: 18, a: 1 };
   static red = { r: 255, g: 0, b: 0, a: 1 };
   static default_bg: { r: 115; g: 140; b: 153; a: 1 };
+
+  private static EPS_DECIMALS = 6;
 
   static string(color: Color): string {
     return `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`;
@@ -96,15 +109,21 @@ export class MColor {
     }
   }
 
+  static toHex(color: Color): string {
+    const r = Math.round(color.r).toString(16).padStart(2, "0");
+    const g = Math.round(color.g).toString(16).padStart(2, "0");
+    const b = Math.round(color.b).toString(16).padStart(2, "0");
+    const a = Math.round(color.a * 255).toString(16).padStart(2, "0");
+
+    return color.a === 1 ? `#${r}${g}${b}` : `#${r}${g}${b}${a}`;
+  }
+
   static fromRGB(rgb: { r: number; g: number; b: number }): Color {
     return { ...rgb, a: 1 };
   }
 
   static fromHSVA(h: number, s: number, v: number, a: number): Color {
     const hp = ((h % 360) + 360) % 360;
-
-    console.assert(s >= 0 && s <= 1);
-    console.assert(v >= 0 && v <= 1);
 
     const c = v * s;
     const x = c * (1 - Math.abs((hp / 60) % 2 - 1))
@@ -127,8 +146,7 @@ export class MColor {
 
     [r, g, b] = [255 * (r + m), 255 * (g + m), 255 * (b + m)];
 
-    return { r, g, b, a };
-
+    return { r: round(r, this.EPS_DECIMALS), g: round(g, this.EPS_DECIMALS), b: round(b, this.EPS_DECIMALS), a };
 
   }
 
@@ -150,13 +168,11 @@ export class MColor {
       h = 60 * ((b - r) / delta + 2);
     else if (max == b)
       h = 60 * ((r - g) / delta + 4);
-    else
-      console.warn("NOTHING COLOR")
 
     const s = max === 0 ? 0 : delta / max;
     const v = max;
 
-    return { h, s, v, a: color.a };
+    return { h: round(h, this.EPS_DECIMALS), s: round(s, this.EPS_DECIMALS), v: round(v, this.EPS_DECIMALS), a: color.a };
   }
 }
 
