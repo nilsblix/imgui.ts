@@ -144,8 +144,15 @@ export class Stack<ActionType> { // root
 
       if (ret.action == null && (!MBBox.isInside(widget.bbox, input_state.mouse_position.x, input_state.mouse_position.y) || input_state.moving_window))
         continue;
+
+      if (input_state.mouse_frame.released) {
+        input_state.active_widget_loc = [];
+      }
+
       return ret;
     }
+
+
     return { wants_focus: false, action: null };
   }
 }

@@ -13,6 +13,7 @@ enum UIAction {
   HIGH_drag_text_wrap_width,
   bg_color_r, bg_color_g, bg_color_b,
   toggle_window_1,
+  change_bg_color_with_picker,
 }
 
 const c = <gui.REND>gui.canvas.getContext("2d");
@@ -43,7 +44,7 @@ function update() {
 
   const mst = performance.now();
 
-  const q = stack.makeWindow(c, input_state, {window: UIAction.placeholder, header: UIAction.placeholder, resizeable: UIAction.placeholder, close_btn: null}, {title: "debug info", width: 600, height: 400});
+  const q = stack.makeWindow(c, input_state, {window: UIAction.placeholder, header: UIAction.placeholder, resizeable: UIAction.placeholder, close_btn: null}, {title: "debug info", width: 600, height: 500});
   q.makeLabel(c, null, "gui-time = " + dt.toFixed(2));
   q.makeLabel(c, null, "frt = " + frame_time.toFixed(4));
   q.makeLabel(c, null, "active loc = " + input_state.active_widget_loc);
@@ -55,6 +56,8 @@ function update() {
   q.makeLabel(c, null, "active windows = " + input_state.window_active);
   q.makeLabel(c, null, "minim windows = " + input_state.window_minimised);
   q.makeLabel(c, null, "frame act = " + JSON.stringify(input_state.mouse_frame));
+
+  const bg_color_picker = q.makeColorPickerRect(UIAction.change_bg_color_with_picker, bg_color, 400, 200);
 
   for (let i = 0; i < num_windows; i++) {
     if (i == 0) {
@@ -168,6 +171,9 @@ function update() {
     case UIAction.toggle_window_1:
       input_state.window_active[2] = !input_state.window_active[2];
       break;
+    case UIAction.change_bg_color_with_picker:
+      bg_color = bg_color_picker.color;
+      break;
   }
 
   const rst = performance.now();
@@ -186,5 +192,4 @@ function update() {
   requestAnimationFrame(update)
 }
 
-// setInterval(update, 1E3/120)
 update();

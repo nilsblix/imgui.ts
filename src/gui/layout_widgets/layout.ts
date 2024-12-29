@@ -1,8 +1,10 @@
-import { REND, N, WidgetLoc, Cursor, BBox, MBBox, Widget, GlobalStyle, InputState } from "../gui.ts";
+import { REND, N, WidgetLoc, Cursor, Color, BBox, MBBox, Widget, GlobalStyle, InputState } from "../gui.ts";
 import { Label } from "../basic_widgets/label.ts";
 import { Button } from "../basic_widgets/button.ts";
 import { Draggable } from "../basic_widgets/draggable.ts";
 import { Text } from "../basic_widgets/text.ts";
+import { ColorPickerRect } from "../basic_widgets/color_picker.ts";
+
 import { WindowHeader } from "./window.ts";
 
 export abstract class Layout<ActionType> implements Widget<ActionType> {
@@ -107,6 +109,12 @@ export abstract class Layout<ActionType> implements Widget<ActionType> {
     const wtext = new Text<ActionType>(c, action_type, this.loc.concat([this.widgets.length]), this.cursor, text, max_width ?? (MBBox.calcWidth(this.bbox) - 2 * GlobalStyle.layout_commons.padding));
     this.pushWidget(wtext);
     return wtext;
+  }
+
+  makeColorPickerRect(action_type: ActionType, color: Color, width: number, height: number): ColorPickerRect<ActionType> {
+    const picker = new ColorPickerRect<ActionType>(action_type, this.loc.concat([this.widgets.length]), this.cursor, color, width, height);
+    this.pushWidget(picker);
+    return picker;
   }
 
   resetCursor() {

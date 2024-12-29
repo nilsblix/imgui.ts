@@ -53,7 +53,7 @@ export class MColor {
   static black = { r: 0, g: 0, b: 0, a: 1 };
   static g_18 = { r: 18, g: 19, b: 18, a: 1 };
   static red = { r: 255, g: 0, b: 0, a: 1 };
-  static default_bg: { r: 115, g: 140, b: 153, a: 1 };
+  static default_bg: { r: 115; g: 140; b: 153; a: 1 };
 
   static string(color: Color): string {
     return `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`;
@@ -98,6 +98,65 @@ export class MColor {
 
   static fromRGB(rgb: { r: number; g: number; b: number }): Color {
     return { ...rgb, a: 1 };
+  }
+
+  static fromHSVA(h: number, s: number, v: number, a: number): Color {
+    const hp = ((h % 360) + 360) % 360;
+
+    console.assert(s >= 0 && s <= 1);
+    console.assert(v >= 0 && v <= 1);
+
+    const c = v * s;
+    const x = c * (1 - Math.abs((hp / 60) % 2 - 1))
+    const m = v - c;
+
+    let [r, g, b] = [0, 0, 0];
+
+    if (0 <= hp && hp < 60)
+      [r, g, b] = [c, x, 0];
+    else if (60 <= hp && hp < 120)
+      [r, g, b] = [x, c, 0];
+    else if (120 <= hp && hp < 180)
+      [r, g, b] = [0, c, x];
+    else if (180 <= hp && hp < 240)
+      [r, g, b] = [0, x, c];
+    else if (240 <= hp && hp < 300)
+      [r, g, b] = [x, 0, c];
+    else if (300 <= hp && hp < 360)
+      [r, g, b] = [c, 0, x];
+
+    [r, g, b] = [255 * (r + m), 255 * (g + m), 255 * (b + m)];
+
+    return { r, g, b, a };
+
+
+  }
+
+  static toHSVA(color: Color): { h: number; s: number; v: number, a: number} {
+    const r = color.r / 255;
+    const g = color.g / 255;
+    const b = color.b / 255;
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const delta = max - min;
+
+    let h = 0;
+    if (delta == 0)
+      h = 0;
+    else if (max == r)
+      h = 60 * (((g - b) / delta) % 6);
+    else if (max == g)
+      h = 60 * ((b - r) / delta + 2);
+    else if (max == b)
+      h = 60 * ((r - g) / delta + 4);
+    else
+      console.warn("NOTHING COLOR")
+
+    const s = max === 0 ? 0 : delta / max;
+    const v = max;
+
+    return { h, s, v, a: color.a };
   }
 }
 
@@ -163,7 +222,7 @@ export class GlobalStyle {
     bg_color: MColor.fromHex("#0F0F0FF0"),
     border: "#6E6E8080",
     border_width: 1,
-  }
+  };
   static header_commons = {
     color: "#ffffff",
     bg_color: "#294A7AFF",
@@ -171,11 +230,9 @@ export class GlobalStyle {
   };
   static window = {
     minimized_header_bg: "#9F9F9F09",
-  }
-  static grid = {
-  }
-  static popup = {
-  }
+  };
+  static grid = {};
+  static popup = {};
 }
 
 export class InputState {
@@ -197,7 +254,7 @@ export class InputState {
 
   window_offsets: Cursor[];
   window_positions: Cursor[];
-  window_sizes: { width: number, height: number }[];
+  window_sizes: { width: number; height: number }[];
   window_active: boolean[];
   window_minimised: boolean[];
   window_order: number[];
@@ -254,7 +311,10 @@ export class InputState {
 
       this.mouse_frame.clicked = true;
 
-      if (this.last_click_time !== -1 && now - this.last_click_time < this.double_click_threshold) {
+      if (
+        this.last_click_time !== -1 &&
+        now - this.last_click_time < this.double_click_threshold
+      ) {
         this.mouse_frame.double_clicked = true;
       } else {
         this.mouse_frame.double_clicked = false;
