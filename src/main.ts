@@ -59,7 +59,7 @@ function update() {
   q.makeLabel(c, null, "minim windows = " + input_state.window_minimised);
   q.makeLabel(c, null, "frame act = " + JSON.stringify(input_state.mouse_frame));
 
-  const picker_wind = stack.makeWindow(c, input_state, { window: UIAction.placeholder, header: null, resizeable: null, close_btn: null }, { title: "color picker test", width: 300, height: 450, x: 800, y: 100 });
+  const picker_wind = stack.makeWindow(c, input_state, { window: UIAction.placeholder, header: UIAction.placeholder, resizeable: null, close_btn: null }, { title: "color picker test", width: 300, height: 380, x: 800, y: 100 });
   const picker_wind_usable_width = gui.MBBox.calcWidth(picker_wind.bbox) - 2 * gui.GlobalStyle.layout_commons.padding - 2 * gui.GlobalStyle.layout_commons.widget_gap;
   const bg_color_picker = picker_wind.makeColorPickerRect(UIAction.change_bg_color_with_picker, bg_color, picker_wind_usable_width + 2 * gui.GlobalStyle.layout_commons.widget_gap, 300);
 
@@ -206,27 +206,27 @@ function update() {
       break;
     case UIAction.change_bg_color_hue:
       let {h: h1, s: s1, v: v1, a: a1} = gui.MColor.toHSVA(bg_color);
-      h1 += 2 * input_state.mouse_delta_pos.x;
+      h1 = gui.updateDraggableValue(h1, input_state, 1.0);
       bg_color = gui.MColor.fromHSVA(h1, s1, v1, a1);
       break;
     case UIAction.change_bg_color_saturation:
       let {h: h2, s: s2, v: v2, a: a2} = gui.MColor.toHSVA(bg_color);
-      s2 += 0.005 * input_state.mouse_delta_pos.x;
+      s2 = gui.updateDraggableValue(s2, input_state, 0.005, { min: 0, max: 1 });
       bg_color = gui.MColor.fromHSVA(h2, s2, v2, a2);
       break;
     case UIAction.change_bg_color_brightness:
       let {h: h3, s: s3, v: v3, a: a3} = gui.MColor.toHSVA(bg_color);
-      v3 += 0.005 * input_state.mouse_delta_pos.x;
+      v3 = gui.updateDraggableValue(v3, input_state, 0.005, { min: 0, max: 1 });
       bg_color = gui.MColor.fromHSVA(h3, s3, v3, a3);
       break;
     case UIAction.change_bg_color_r:
-      bg_color.r += input_state.mouse_delta_pos.x;
+      bg_color.r = gui.updateDraggableValue(bg_color.r, input_state, 1.0, { min: 0, max: 255 });
       break;
     case UIAction.change_bg_color_g:
-      bg_color.g += input_state.mouse_delta_pos.x;
+      bg_color.g = gui.updateDraggableValue(bg_color.g, input_state, 1.0, { min: 0, max: 255 });
       break;
     case UIAction.change_bg_color_b:
-      bg_color.b += input_state.mouse_delta_pos.x;
+      bg_color.b = gui.updateDraggableValue(bg_color.b, input_state, 1.0, { min: 0, max: 255 });
       break;
   }
 

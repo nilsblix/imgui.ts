@@ -43,6 +43,27 @@ export function round(x: number, e: number): number {
   return Math.floor(x * 10 ** e) / (10 ** e);
 }
 
+function mod(a: number, b: number): number {
+  if (b < 0)
+    return -mod(-a, -b);
+  let ret = a % b;
+  if (ret < 0)
+    ret += b;
+  return ret;
+}
+
+export function updateDraggableValue(val: number, input_state: InputState, sensitivity: number, config?: {min?: number, max?: number}): number {
+  if (config?.min != undefined && config?.max != undefined)
+    console.assert(config.min < config.max);
+
+  let v = val + sensitivity * input_state.mouse_delta_pos.x;
+  if (config?.min != undefined && v < config?.min)
+    v = config.min;
+  if (config?.max != undefined && v > config?.max)
+    v = config?.max;
+  return v;
+}
+
 export type REND = CanvasRenderingContext2D;
 export type N<T> = null | T;
 export type WidgetLoc = number[];
@@ -123,7 +144,8 @@ export class MColor {
   }
 
   static fromHSVA(h: number, s: number, v: number, a: number): Color {
-    const hp = ((h % 360) + 360) % 360;
+    // const hp = ((h % 360) + 360) % 360;
+    const hp = mod(h, 360);
 
     const c = v * s;
     const x = c * (1 - Math.abs((hp / 60) % 2 - 1))
@@ -162,12 +184,13 @@ export class MColor {
     let h = 0;
     if (delta == 0)
       h = 0;
-    else if (max == r)
-      h = 60 * (((g - b) / delta) % 6);
-    else if (max == g)
-      h = 60 * ((b - r) / delta + 2);
-    else if (max == b)
-      h = 60 * ((r - g) / delta + 4);
+    else if (max === r) {
+      h = ((60 * ((g - b) / delta)) + 360) % 360;
+    } else if (max === g) {
+      h = ((60 * ((b - r) / delta)) + 120) % 360;
+    } else if (max === b) {
+      h = ((60 * ((r - g) / delta)) + 240) % 360;
+    }
 
     const s = max === 0 ? 0 : delta / max;
     const v = max;
@@ -218,6 +241,7 @@ export type Widget<ActionType> = {
 
 export class GlobalStyle {
   static font = "ProggyCleanTT";
+  // static font = "Martian Mono";
   static widget = {
     default_bg_color: "#294A7AFF",
     hover_bg_color: "#4296FAFF",

@@ -51,7 +51,7 @@ export class Button<ActionType> implements Widget<ActionType> {
     c.textAlign = "center";
 
     const x = (this.bbox.left + this.bbox.right) / 2;
-    const y = (this.bbox.top + this.bbox.bottom) / 2 - GlobalStyle.button.font_size * 0.25; // Adjust 0.3 as needed
+    const y = (this.bbox.top + this.bbox.bottom) / 2 - GlobalStyle.button.font_size * 0.25;
     c.fillText(this.text, x, y);
   }
 
