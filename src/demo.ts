@@ -60,8 +60,9 @@ function update() {
   q.makeLabel(c, null, "frame act = " + JSON.stringify(input_state.mouse_frame));
 
   const picker_wind = stack.makeWindow(c, input_state, { window: UIAction.placeholder, header: UIAction.placeholder, resizeable: null, close_btn: null }, { title: "color picker test", width: 300, height: 380, x: 800, y: 100 });
+
   const picker_wind_usable_width = gui.MBBox.calcWidth(picker_wind.bbox) - 2 * gui.GlobalStyle.layout_commons.padding - 2 * gui.GlobalStyle.layout_commons.widget_gap;
-  const bg_color_picker = picker_wind.makeColorPickerRect(UIAction.change_bg_color_with_picker, bg_color, picker_wind_usable_width + 2 * gui.GlobalStyle.layout_commons.widget_gap, 300);
+  const bg_color_picker = picker_wind.makeColorPickerRect(UIAction.change_bg_color_with_picker, gui.MColor.fromHex(gui.GlobalStyle.widget.default_bg_color), picker_wind_usable_width + 2 * gui.GlobalStyle.layout_commons.widget_gap, 300);
 
   const hsv_h = picker_wind.makeDraggable(c, UIAction.change_bg_color_hue, "H: " + Math.round(gui.MColor.toHSVA(bg_color).h), {width: 1/3 * picker_wind_usable_width});
   picker_wind.cursor.x = hsv_h.bbox.right + gui.GlobalStyle.layout_commons.widget_gap;
@@ -202,7 +203,8 @@ function update() {
       input_state.window_active[2] = !input_state.window_active[2];
       break;
     case UIAction.change_bg_color_with_picker:
-      bg_color = bg_color_picker.color;
+      // bg_color = bg_color_picker.color;
+      gui.GlobalStyle.widget.default_bg_color = gui.MColor.toHex(bg_color_picker.color);
       break;
     case UIAction.change_bg_color_hue:
       let {h: h1, s: s1, v: v1, a: a1} = gui.MColor.toHSVA(bg_color);
