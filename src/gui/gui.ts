@@ -231,7 +231,6 @@ export type Widget<ActionType> = {
   bbox: BBox;
   loc: WidgetLoc;
   action_type: ActionType;
-  widgets: Widget<ActionType>[];
   render: (c: REND) => void;
   requestAction: (input_state: InputState) => {
     wants_focus: boolean;

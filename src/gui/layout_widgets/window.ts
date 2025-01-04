@@ -101,8 +101,21 @@ class CloseButton<ActionType> extends Button<ActionType> implements Widget<Actio
 export class Window<ActionType> extends Layout<ActionType> implements Widget<ActionType> {
   min_size: { width: number, height: number };
   header_height: number;
+  offset: number;
+  mode: "normal" | "two columns";
+  tools: {
+    min_width: number,
+    max_width: number,
+  }
+
   constructor(c: REND, window_action_type: ActionType, header_action_type: ActionType, resizeable_action_type: ActionType, close_btn_action_type: ActionType, loc: WidgetLoc, x: number, y: number, width: number, height: number, title: string, min_size: {width: number, height: number}) {
     super(window_action_type, loc, x, y, width, height);
+    this.offset = 0;
+    this.mode = "normal";
+    this.tools = {
+      min_width: 0,
+      max_width: MBBox.calcWidth(this.bbox),
+    };
 
     const resize_loc = this.loc.concat([]);
     resize_loc.push(this.widgets.length);
@@ -132,9 +145,39 @@ export class Window<ActionType> extends Layout<ActionType> implements Widget<Act
 
   updateBBox(): void {}
 
+  setMode(mode: "normal" | "two columns", config?: {min_width: number, max_width: number}): void {
+    this.mode = mode;
+    switch (this.mode) {
+      case "normal":
+        break;
+      case "two columns":
+        this.offset = this.widgets.length;
+        if (config != undefined) {
+          this.tools.min_width = config.min_width != undefined ? config.min_width : this.tools.min_width;
+          this.tools.max_width = config.max_width != undefined ? config.max_width : this.tools.max_width;
+        }
+        break;
+    }
+  }
+
   pushWidget(widget: Widget<ActionType>): void {
     super.pushWidget(widget);
-    this.cursor.y += MBBox.calcHeight(widget.bbox) + GlobalStyle.layout_commons.widget_gap;
+
+    switch (this.mode) {
+      case "normal":
+          this.cursor.y += MBBox.calcHeight(widget.bbox) + GlobalStyle.layout_commons.widget_gap;
+          break;
+      case "two columns":
+          if ((this.widgets.length - this.offset) % 2 == 0) {
+            this.cursor.x = this.bbox.left + GlobalStyle.layout_commons.padding;
+            const last_idx = this.widgets.length - 1;
+            const row_height = Math.max(MBBox.calcHeight(this.widgets[last_idx].bbox), MBBox.calcHeight(this.widgets[last_idx - 1].bbox));
+            this.cursor.y += row_height + GlobalStyle.layout_commons.widget_gap;
+          } else {
+            this.cursor.x += Math.min(this.tools.max_width, Math.max(this.tools.min_width, MBBox.calcWidth(this.bbox))) / 2;
+          }
+          break;
+    }
   }
 
   render(c: REND): void {

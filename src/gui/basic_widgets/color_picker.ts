@@ -4,7 +4,6 @@ export class ColorPickerRect<ActionType> implements Widget<ActionType> {
   bbox: BBox;
   action_type: ActionType;
   loc: WidgetLoc;
-  widgets: Widget<ActionType>[];
   color: Color;
 
   constructor(action_type: ActionType, loc: WidgetLoc, cursor: Cursor, color: Color, width: number, height: number) {
@@ -12,7 +11,6 @@ export class ColorPickerRect<ActionType> implements Widget<ActionType> {
     this.bbox = { left: cursor.x, top: cursor.y, right: cursor.x + width, bottom: cursor.y + height};
     this.action_type = action_type;
     this.loc = loc;
-    this.widgets = [];
   }
 
   render(c: REND): void {

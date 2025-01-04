@@ -12,7 +12,6 @@ export class Draggable<ActionType> implements Widget<ActionType> {
   bbox: BBox;
   action_type: ActionType;
   loc: WidgetLoc;
-  widgets: Widget<ActionType>[];
   text: string;
   state: DraggableState;
 
@@ -27,7 +26,6 @@ export class Draggable<ActionType> implements Widget<ActionType> {
     this.action_type = action_type;
     this.state = DraggableState.default;
     this.loc = loc;
-    this.widgets = [];
   }
 
   render(c: REND): void {
@@ -77,12 +75,6 @@ export class Draggable<ActionType> implements Widget<ActionType> {
       return { wants_focus: true, action: this.action_type };
     if (this.state == DraggableState.released)
       return { wants_focus: false, action: null };
-
-    for (let widget of this.widgets) {
-      const ret = widget.requestAction(input_state);
-      if (ret.wants_focus || ret.action != null )
-        return ret;
-    }
 
     return { wants_focus: false, action: null };
 

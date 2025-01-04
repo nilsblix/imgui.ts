@@ -60,7 +60,7 @@ export abstract class Layout<ActionType> implements Widget<ActionType> {
           continue;
         }
         const ret = widget.requestAction(input_state);
-        if (ret.wants_focus || ret.action != null || (widget.widgets.length == 0 && MBBox.isInside(widget.bbox, x, y) && widget.action_type != null && !(widget instanceof WindowHeader)))
+        if (ret.wants_focus || ret.action != null || (!(widget instanceof Layout) && MBBox.isInside(widget.bbox, x, y) && widget.action_type != null && !(widget instanceof WindowHeader)))
           return { iters: i, wants_focus: ret.wants_focus, action: ret.action };
       }
     }
@@ -93,8 +93,8 @@ export abstract class Layout<ActionType> implements Widget<ActionType> {
     return label;
   }
 
-  makeButton(c: REND, action_type: ActionType, text: string): Button<ActionType> {
-    const button = new Button<ActionType>(c, action_type, this.loc.concat([this.widgets.length]), this.cursor, text);
+  makeButton(c: REND, action_type: ActionType, text: string, config?: {width?: number, height?: number}): Button<ActionType> {
+    const button = new Button<ActionType>(c, action_type, this.loc.concat([this.widgets.length]), this.cursor, text, config?.width, config?.height);
     this.pushWidget(button);
     return button;
   }

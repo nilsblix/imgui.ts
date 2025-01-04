@@ -9,7 +9,6 @@ export class Label<ActionType> implements Widget<ActionType> {
   bbox: BBox;
   action_type: ActionType;
   loc: WidgetLoc;
-  widgets: Widget<ActionType>[];
   text: string;
   text_size: number;
   state: LabelState;
@@ -26,7 +25,6 @@ export class Label<ActionType> implements Widget<ActionType> {
     this.text_size = GlobalStyle.label.font_size;
     this.state = LabelState.default;
     this.loc = loc;
-    this.widgets = [];
   }
 
   render(c: REND): void {
@@ -61,12 +59,6 @@ export class Label<ActionType> implements Widget<ActionType> {
 
     if (this.state == LabelState.hovered) {
       return { wants_focus: input_state.mouse_frame.clicked, action: this.action_type };
-    }
-
-    for (let widget of this.widgets) {
-      const ret = widget.requestAction(input_state);
-      if (ret.wants_focus || ret.action != null)
-        return ret;
     }
 
     return { wants_focus: false, action: null };

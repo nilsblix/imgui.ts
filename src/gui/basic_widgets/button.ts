@@ -12,22 +12,24 @@ export class Button<ActionType> implements Widget<ActionType> {
   bbox: BBox;
   action_type: ActionType;
   loc: WidgetLoc;
-  widgets: Widget<ActionType>[];
   text: string;
   state: ButtonState;
 
-  constructor(c: REND, action_type: ActionType, loc: WidgetLoc, cursor: Cursor, text: string) {
+  constructor(c: REND, action_type: ActionType, loc: WidgetLoc, cursor: Cursor, text: string, con_width?: number, con_height?: number) {
     c.font = GlobalStyle.button.font_size + "px " + GlobalStyle.font;
     c.textBaseline = "middle";
     const m = c.measureText(text);
-    const width = m.width;
-    const height = m.fontBoundingBoxAscent + m.fontBoundingBoxDescent;
-    this.bbox = { left: cursor.x, top: cursor.y, right: cursor.x + width + 2 * GlobalStyle.button.padding, bottom: cursor.y + height + 2 * GlobalStyle.button.padding };
+
+    const text_width = m.width + 2 * GlobalStyle.button.padding; 
+    const width = con_width != undefined && con_width > text_width ? con_width : text_width;
+
+    const text_height = m.fontBoundingBoxAscent + m.fontBoundingBoxDescent + 2 * GlobalStyle.button.padding;
+    const height = con_height != undefined && con_height > text_height ? con_height : text_height; 
+    this.bbox = { left: cursor.x, top: cursor.y, right: cursor.x + width, bottom: cursor.y + height };
     this.text = text;
     this.action_type = action_type;
     this.state = ButtonState.default;
     this.loc = loc;
-    this.widgets = [];
   }
 
   render(c: REND): void {
@@ -78,12 +80,6 @@ export class Button<ActionType> implements Widget<ActionType> {
 
     if (this.state == ButtonState.released)
       return { wants_focus: false, action: this.action_type };
-
-    for (let widget of this.widgets) {
-      const ret = widget.requestAction(input_state);
-      if (ret.wants_focus || ret.action != null )
-        return ret;
-    }
 
     return { wants_focus: false, action: null };
 

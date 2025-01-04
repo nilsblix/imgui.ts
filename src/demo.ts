@@ -13,7 +13,7 @@ enum UIAction {
   HIGH_drag_text_wrap_width,
   bg_color_r, bg_color_g, bg_color_b,
   toggle_window_1,
-  change_bg_color_with_picker,
+  change_bg_color_with_picker, change_bg_color_real_width_picker,
   change_bg_color_hue, change_bg_color_saturation, change_bg_color_brightness,
   change_bg_color_r, change_bg_color_g, change_bg_color_b,
 }
@@ -37,6 +37,8 @@ let bg_color: gui.Color = gui.MColor.fromHex("#738C99");
 
 function update() {
   document.body.style.backgroundColor = gui.MColor.string(bg_color);
+
+  let real_color_picker_glob = null;
 
   const st = performance.now();
 
@@ -138,22 +140,18 @@ function update() {
       l.makeLabel(c, null, "testing after rgb")
 
     } else if (i == 1) {
-      const l = stack.makeWindow(c, input_state, {window: UIAction.placeholder, header: UIAction.placeholder, resizeable: UIAction.placeholder, close_btn: UIAction.placeholder}, {title: ":) " + (i + 1), x: 200 + 10*i, y: 100+10*i});
-      l.makeText(c, null, "Testing cursor before grid. PLS lorem ipsum save me here i'm about to LOSE my mind!! Ha ha ha ha HA. What is happening to me. How do I take of my mask if I'm the mask? What does my face look like");
-      const g = gui.Stack.makeGrid(l, UIAction.placeholder, 2, 1.0);
-      const w = gui.MBBox.calcWidth(l.bbox) / 2.5;
-      const te = "some long debug text";
-      g.makeText(c, null, te, w);
-      g.makeText(c, null, te, w);
-      g.makeText(c, null, te, w);
-      g.makeText(c, null, te, w);
-      g.makeText(c, null, te, w);
-      g.makeText(c, null, te, w);
-      l.resetCursor();
-      l.makeLabel(c, null, "Testing cursor after grid");
-    } else {
-      const l = stack.makeWindow(c, input_state, {window: UIAction.placeholder, header: UIAction.placeholder, resizeable: UIAction.placeholder, close_btn: UIAction.placeholder}, {title: ":) " + (i + 1), x: 200 + 10*i, y: 100+10*i});
-      l.makeText(c, null, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", text_wrap_width);
+      const l = stack.makeWindow(c, input_state, {window: UIAction.placeholder, header: UIAction.placeholder, resizeable: UIAction.placeholder, close_btn: null}, {title: "test window with different layout modes", x: 400, y: 100});
+      const [width, height] = [gui.MBBox.calcWidth(l.bbox) - gui.GlobalStyle.layout_commons.padding, gui.MBBox.calcHeight(l.bbox) - 2 * gui.GlobalStyle.layout_commons.padding];
+      const col_width = Math.min(600, Math.max(300, width)) / 2;
+      l.makeDraggable(c, UIAction.change_bg_color_r, "Drag for bg r");
+      l.makeLabel(c, null, "Two column mode: ");
+      l.setMode("two columns", {min_width: 300, max_width: 600});
+      l.makeLabel(c, null, "some left side text");
+      l.makeLabel(c, null, "some right text");
+      l.makeButton(c, UIAction.increment, "Increment", {width: 100, height: 50});
+      l.makeButton(c, UIAction.decrement, "Decrement");
+      real_color_picker_glob = l.makeColorPickerRect(UIAction.change_bg_color_real_width_picker, bg_color, col_width, col_width); 
+      l.makeText(c, null, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", col_width - 10);
     }
   }
 
@@ -230,6 +228,9 @@ function update() {
     case UIAction.change_bg_color_b:
       bg_color.b = gui.updateDraggableValue(bg_color.b, input_state, 1.0, { min: 0, max: 255 });
       break;
+    case UIAction.change_bg_color_real_width_picker:
+      if (real_color_picker_glob != null)
+        bg_color = real_color_picker_glob.color;
   }
 
   const rst = performance.now();
