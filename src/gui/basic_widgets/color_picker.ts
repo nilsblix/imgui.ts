@@ -8,7 +8,7 @@ export class ColorPickerRect<ActionType> implements Widget<ActionType> {
 
   constructor(action_type: ActionType, loc: WidgetLoc, cursor: Cursor, color: Color, width: number, height: number) {
     this.color = color;
-    this.bbox = { left: cursor.x, top: cursor.y, right: cursor.x + width, bottom: cursor.y + height};
+    this.bbox = { left: cursor.x, top: cursor.y, right: cursor.x + width, bottom: cursor.y + height };
     this.action_type = action_type;
     this.loc = loc;
   }
@@ -63,10 +63,13 @@ export class ColorPickerRect<ActionType> implements Widget<ActionType> {
     const [x, y] = [input_state.mouse_position.x, input_state.mouse_position.y];
 
     const inside = MBBox.isInside(this.bbox, x, y);
-    if (inside && input_state.mouse_down)
+
+    if (inside && input_state.mouse_frame.clicked)
       input_state.active_widget_loc = this.loc;
 
-    if (JSON.stringify(input_state.active_widget_loc) == JSON.stringify(this.loc) && input_state.mouse_down) {
+    const same_loc = (JSON.stringify(input_state.active_widget_loc) == JSON.stringify(this.loc));
+
+    if (same_loc && input_state.mouse_down) {
       const width = MBBox.calcWidth(this.bbox);
       const height = MBBox.calcHeight(this.bbox);
 
@@ -78,15 +81,15 @@ export class ColorPickerRect<ActionType> implements Widget<ActionType> {
       const hsv = MColor.toHSVA(this.color);
       let new_color: Color;
       if (bright_scalar === 0) {
-          // Brightness is zero, color is black
-          new_color = MColor.fromHSVA(hsv.h, sat_scalar, 0, this.color.a);
+        // Brightness is zero, color is black
+        new_color = MColor.fromHSVA(hsv.h, sat_scalar, 0, this.color.a);
       } else if (sat_scalar === 0) {
-          // Saturation is zero, default to red
-          new_color = MColor.fromHSVA(hsv.h, 0, bright_scalar, this.color.a);
+        // Saturation is zero, default to red
+        new_color = MColor.fromHSVA(hsv.h, 0, bright_scalar, this.color.a);
       } else {
-          // General case
-          const current_hsv = MColor.toHSVA(this.color);
-          new_color = MColor.fromHSVA(current_hsv.h, sat_scalar, bright_scalar, this.color.a);
+        // General case
+        const current_hsv = MColor.toHSVA(this.color);
+        new_color = MColor.fromHSVA(current_hsv.h, sat_scalar, bright_scalar, this.color.a);
       }
       this.color = new_color;
 
