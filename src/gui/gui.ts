@@ -1,26 +1,3 @@
-// NOTES:GG
-// layering of layouts. FUCK. indices of persistent states will be FUCKED.
-//  ==> Maybe other persistent array of index mapping? still FUCKED
-// More widgets :)
-// And even more widgets :)
-// NEW NOTES
-// * fix clearing of active widget when spawning new layout (window)
-// * more sophisticated popup handling. maybe internal handling of its states.
-// * color widget. vector4 with popups and everything twin
-// NEW NOTES
-// * fix gap issues in grid
-// STILL * fix grid onclick drag window thing
-// * fix other grid issues such as relative sizing issues and closing/finishing grid cursor thing
-// * color widget pls
-// fine with user based popup data handling. don't really want to fix that
-// the user can fuck off and learn the intricasies of the based nirf_gui.
-// NEW
-// * fix window height increasing wheh minimized and hover over close btn
-// * fix rendering such that pretty much nothing renders (tries to) when it is minimized
-// * COLOR widget pls
-// NEW
-// Need to to stack.createPopup
-// AND stack.createColorPickerPopup
 import { Stack } from "./stack.ts";
 
 export { Stack };
@@ -52,7 +29,7 @@ function mod(a: number, b: number): number {
   return ret;
 }
 
-export function updateDraggableValue(val: number, input_state: InputState, sensitivity: number, config?: {min?: number, max?: number}): number {
+export function updateDraggableValue(val: number, input_state: InputState, sensitivity: number, config?: { min?: number, max?: number }): number {
   if (config?.min != undefined && config?.max != undefined)
     console.assert(config.min < config.max);
 
@@ -172,7 +149,7 @@ export class MColor {
 
   }
 
-  static toHSVA(color: Color): { h: number; s: number; v: number, a: number} {
+  static toHSVA(color: Color): { h: number; s: number; v: number, a: number } {
     const r = color.r / 255;
     const g = color.g / 255;
     const b = color.b / 255;
