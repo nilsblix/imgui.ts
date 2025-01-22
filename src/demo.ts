@@ -141,7 +141,7 @@ function update() {
 
     } else if (i == 1) {
       const l = stack.makeWindow(c, input_state, { window: UIAction.placeholder, header: UIAction.placeholder, resizeable: UIAction.placeholder, close_btn: UIAction.placeholder }, { title: "test window with different layout modes", x: 400, y: 100 });
-      const [width, height] = [gui.MBBox.calcWidth(l.bbox) - gui.GlobalStyle.layout_commons.padding, gui.MBBox.calcHeight(l.bbox) - 2 * gui.GlobalStyle.layout_commons.padding];
+      const [width] = [gui.MBBox.calcWidth(l.bbox) - gui.GlobalStyle.layout_commons.padding, gui.MBBox.calcHeight(l.bbox) - 2 * gui.GlobalStyle.layout_commons.padding];
       const col_width = Math.min(600, Math.max(300, width)) / 2;
       l.makeDraggable(c, UIAction.change_bg_color_r, "Drag for bg r");
       l.makeLabel(c, null, "Two column mode: ");
