@@ -16,13 +16,13 @@ export class Text<ActionType> implements Widget<ActionType> {
   wrapped_lines: string[]; // Stores wrapped lines of text
 
   constructor(c: REND, action_type: ActionType, loc: WidgetLoc, cursor: Cursor, text: string, max_width: number) {
-    c.font = GlobalStyle.label.font_size + "px " + GlobalStyle.font;
+    c.font = GlobalStyle.text.font_size + "px " + GlobalStyle.font;
     c.textBaseline = "middle";
 
     this.max_width = max_width;
     this.text = text;
     this.action_type = action_type;
-    this.text_size = GlobalStyle.label.font_size;
+    this.text_size = GlobalStyle.text.font_size;
     this.state = TextState.default;
     this.loc = loc;
 
@@ -38,7 +38,7 @@ export class Text<ActionType> implements Widget<ActionType> {
     }
 
     // Calculate bounding box based on wrapped lines
-    const line_height = this.text_size * 1.2; // Adjust line height as needed
+    const line_height = this.text_size * GlobalStyle.text.text_height_mult; // Adjust line height as needed
     const height = this.wrapped_lines.length * line_height;
     this.bbox = { left: cursor.x, top: cursor.y, right: cursor.x + width, bottom: cursor.y + height };
   }
@@ -74,7 +74,7 @@ export class Text<ActionType> implements Widget<ActionType> {
     c.textAlign = "left"; // Align text to the left
 
     const line_height = this.text_size * 1.2; // Adjust line height as needed
-    let y = this.bbox.top + line_height / 2 - 0.25 * this.text_size;
+    let y = this.bbox.top + line_height / 2;
 
     for (let line of this.wrapped_lines) {
       const x = this.bbox.left; // Start text at the left edge of the bounding box
@@ -82,10 +82,10 @@ export class Text<ActionType> implements Widget<ActionType> {
       y += line_height;
     }
 
-    // TEMP DEBUG
-    // c.strokeStyle = MColor.string(MColor.white);
-    // c.lineWidth = 1;
-    // c.strokeRect(this.bbox.left, this.bbox.top, MBBox.calcWidth(this.bbox), MBBox.calcHeight(this.bbox));
+    //TEMP DEBUG
+    //c.strokeStyle = MColor.string(MColor.white);
+    //c.lineWidth = 1;
+    //c.strokeRect(this.bbox.left, this.bbox.top, MBBox.calcWidth(this.bbox), MBBox.calcHeight(this.bbox));
   }
 
   requestAction(input_state: InputState): { wants_focus: boolean, action: N<ActionType> } {

@@ -2,9 +2,48 @@ import { Stack } from "./stack.ts";
 
 export { Stack };
 
+const css_style = document.createElement("style");
+css_style.type = "test/css";
+css_style.appendChild(document.createTextNode(`
+    @font-face {
+    font-family: "Hack Regular";
+    font-style: normal;
+    font-weight: normal;
+    src: local("Hack Regular"), url("../../public/hack-webfont/Hack-Regular.woff") format("woff");
+    }
+    
+
+    @font-face {
+    font-family: "Hack Italic";
+    font-style: normal;
+    font-weight: normal;
+    src: local("Hack Italic"), url("../../public/hack-webfont/Hack-Italic.woff") format("woff");
+    }
+    
+
+    @font-face {
+    font-family: "Hack Bold";
+    font-style: normal;
+    font-weight: normal;
+    src: local("Hack Bold"), url("../../public/hack-webfont/Hack-Bold.woff") format("woff");
+    }
+    
+
+    @font-face {
+    font-family: "Hack Bold Italic";
+    font-style: normal;
+    font-weight: normal;
+    src: local("Hack Bold Italic"), url("../../public/hack-webfont/Hack-BoldItalic.woff") format("woff");
+    }`
+));
+document.head.appendChild(css_style);
+
 export const canvas = document.createElement("canvas");
-canvas.id = "nirf_canvas";
+canvas.id = "nvb-imgui-canvas";
 document.body.appendChild(canvas);
+canvas.style.position = "absolute";
+canvas.style.top = "0 px";
+canvas.style.left = "0 px";
 export function updateCanvasSizing() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -216,17 +255,23 @@ export type Widget<ActionType> = {
 };
 
 export class GlobalStyle {
-  static font = "ProggyCleanTT";
+  //static font = "ProggyCleanTT";
   // static font = "Martian Mono";
+  static font = "Hack Regular";
+  //static font = "Courier New";
   static widget = {
     default_bg_color: "#294A7AFF",
     hover_bg_color: "#4296FAFF",
     down_bg_color: "#0F87FAFF",
   };
   static label = {
-    font_size: 16,
+    font_size: 40,
     default_font_color: MColor.white,
     inactive_font_color: MColor.fromHex("#808080FF"),
+  };
+  static text = {
+    font_size: 16,
+    text_height_mult: 1.2,
   };
   static button = {
     padding: 3,

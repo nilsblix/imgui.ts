@@ -37,13 +37,13 @@ class Header<ActionType> implements Widget<ActionType> {
     c.textAlign = "left";
 
     const x = this.bbox.left + GlobalStyle.layout_commons.widget_gap;
-    const y = (this.bbox.top + this.bbox.bottom) / 2 - MBBox.calcHeight(this.bbox) / 4;
+    const y = (this.bbox.top + this.bbox.bottom) / 2;
     c.fillText(this.title, x, y);
   }
 
-  requestAction(input_state: InputState): {wants_focus: boolean, action: N<ActionType> } {
+  requestAction(input_state: InputState): { wants_focus: boolean, action: N<ActionType> } {
     if (this.action_type == null)
-      return {wants_focus: false, action: null };
+      return { wants_focus: false, action: null };
 
     const [x, y] = [input_state.mouse_position.x, input_state.mouse_position.y];
 
@@ -51,7 +51,7 @@ class Header<ActionType> implements Widget<ActionType> {
     if (inside && input_state.mouse_frame.double_clicked)
       return { wants_focus: false, action: this.action_type };
 
-    return {wants_focus: false, action: null };
+    return { wants_focus: false, action: null };
   }
 
 }
@@ -89,7 +89,7 @@ class CloseButton<ActionType> extends Button<ActionType> implements Widget<Actio
 
     y -= GlobalStyle.button.font_size * 0.35;
 
-    c.font = `normal ${1.25*GlobalStyle.button.font_size}px ${GlobalStyle.font}`;
+    c.font = `normal ${1.25 * GlobalStyle.button.font_size}px ${GlobalStyle.font}`;
     c.fillStyle = MColor.string(MColor.white);
     c.textBaseline = "middle";
     c.textAlign = "center";
@@ -102,13 +102,13 @@ export class Window<ActionType> extends Layout<ActionType> implements Widget<Act
   min_size: { width: number, height: number };
   header_height: number;
   offset: number;
-  mode: "normal" | "two columns";
+  mode: "normal" | "two columns";
   tools: {
     min_width: number,
     max_width: number,
   }
 
-  constructor(c: REND, window_action_type: ActionType, header_action_type: ActionType, resizeable_action_type: ActionType, close_btn_action_type: ActionType, loc: WidgetLoc, x: number, y: number, width: number, height: number, title: string, min_size: {width: number, height: number}) {
+  constructor(c: REND, window_action_type: ActionType, header_action_type: ActionType, resizeable_action_type: ActionType, close_btn_action_type: ActionType, loc: WidgetLoc, x: number, y: number, width: number, height: number, title: string, min_size: { width: number, height: number }) {
     super(window_action_type, loc, x, y, width, height);
     this.offset = 0;
     this.mode = "normal";
@@ -143,9 +143,9 @@ export class Window<ActionType> extends Layout<ActionType> implements Widget<Act
     header.bbox.right = this.bbox.right;
   }
 
-  updateBBox(): void {}
+  updateBBox(): void { }
 
-  setMode(mode: "normal" | "two columns", config?: {min_width: number, max_width: number}): void {
+  setMode(mode: "normal" | "two columns", config?: { min_width: number, max_width: number }): void {
     this.mode = mode;
     switch (this.mode) {
       case "normal":
@@ -165,18 +165,18 @@ export class Window<ActionType> extends Layout<ActionType> implements Widget<Act
 
     switch (this.mode) {
       case "normal":
-          this.cursor.y += MBBox.calcHeight(widget.bbox) + GlobalStyle.layout_commons.widget_gap;
-          break;
+        this.cursor.y += MBBox.calcHeight(widget.bbox) + GlobalStyle.layout_commons.widget_gap;
+        break;
       case "two columns":
-          if ((this.widgets.length - this.offset) % 2 == 0) {
-            this.cursor.x = this.bbox.left + GlobalStyle.layout_commons.padding;
-            const last_idx = this.widgets.length - 1;
-            const row_height = Math.max(MBBox.calcHeight(this.widgets[last_idx].bbox), MBBox.calcHeight(this.widgets[last_idx - 1].bbox));
-            this.cursor.y += row_height + GlobalStyle.layout_commons.widget_gap;
-          } else {
-            this.cursor.x += Math.min(this.tools.max_width, Math.max(this.tools.min_width, MBBox.calcWidth(this.bbox))) / 2;
-          }
-          break;
+        if ((this.widgets.length - this.offset) % 2 == 0) {
+          this.cursor.x = this.bbox.left + GlobalStyle.layout_commons.padding;
+          const last_idx = this.widgets.length - 1;
+          const row_height = Math.max(MBBox.calcHeight(this.widgets[last_idx].bbox), MBBox.calcHeight(this.widgets[last_idx - 1].bbox));
+          this.cursor.y += row_height + GlobalStyle.layout_commons.widget_gap;
+        } else {
+          this.cursor.x += Math.min(this.tools.max_width, Math.max(this.tools.min_width, MBBox.calcWidth(this.bbox))) / 2;
+        }
+        break;
     }
   }
 

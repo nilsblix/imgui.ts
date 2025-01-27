@@ -20,11 +20,11 @@ export class Button<ActionType> implements Widget<ActionType> {
     c.textBaseline = "middle";
     const m = c.measureText(text);
 
-    const text_width = m.width + 2 * GlobalStyle.button.padding; 
+    const text_width = m.width + 2 * GlobalStyle.button.padding;
     const width = con_width != undefined && con_width > text_width ? con_width : text_width;
 
     const text_height = m.fontBoundingBoxAscent + m.fontBoundingBoxDescent + 2 * GlobalStyle.button.padding;
-    const height = con_height != undefined && con_height > text_height ? con_height : text_height; 
+    const height = con_height != undefined && con_height > text_height ? con_height : text_height;
     this.bbox = { left: cursor.x, top: cursor.y, right: cursor.x + width, bottom: cursor.y + height };
     this.text = text;
     this.action_type = action_type;
@@ -53,7 +53,7 @@ export class Button<ActionType> implements Widget<ActionType> {
     c.textAlign = "center";
 
     const x = (this.bbox.left + this.bbox.right) / 2;
-    const y = (this.bbox.top + this.bbox.bottom) / 2 - GlobalStyle.button.font_size * 0.25;
+    const y = (this.bbox.top + this.bbox.bottom) / 2;
     c.fillText(this.text, x, y);
   }
 

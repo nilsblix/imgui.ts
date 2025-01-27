@@ -48,7 +48,7 @@ export class Draggable<ActionType> implements Widget<ActionType> {
     c.textAlign = "center";
 
     const x = Math.round((this.bbox.left + this.bbox.right) / 2) + 0.5;
-    const y = Math.round((this.bbox.top + this.bbox.bottom) / 2 - GlobalStyle.button.font_size * 0.25) + 0.5;
+    const y = Math.round((this.bbox.top + this.bbox.bottom) / 2);
     c.fillText(this.text, x, y);
 
   }
@@ -63,7 +63,7 @@ export class Draggable<ActionType> implements Widget<ActionType> {
     if (inside && input_state.mouse_frame.clicked) {
       this.state = DraggableState.clicked;
       input_state.active_widget_loc = JSON.parse(JSON.stringify(this.loc));
-    } else if (JSON.stringify(input_state.active_widget_loc) == JSON.stringify(this.loc)&& input_state.mouse_frame.released) {
+    } else if (JSON.stringify(input_state.active_widget_loc) == JSON.stringify(this.loc) && input_state.mouse_frame.released) {
       this.state = DraggableState.released;
     } else if (JSON.stringify(input_state.active_widget_loc) == JSON.stringify(this.loc) && input_state.mouse_down) {
       this.state = DraggableState.down;

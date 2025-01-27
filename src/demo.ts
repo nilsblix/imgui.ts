@@ -104,7 +104,7 @@ function update() {
       l.makeDraggable(c, UIAction.drag_text_wrap_width, "Wrap width: " + text_wrap_width, { width: l_usable_width });
       l.makeLabel(c, null, " ");
       l.makeButton(c, UIAction.add_new_window, "Add a window. " + num_windows);
-      // l.makeText(c, UIAction.increment, "Some more standard placeholder text that isn't some weird loremm ipsum shit that everyone is tired of. Wow have I offended someone with that statement. Fuck you those that are offended. I don't give a fuck", text_wrap_width);
+      l.makeText(c, UIAction.increment, "Some more standard placeholder text that isn't some weird loremm ipsum shit that everyone is tired of. Wow have I offended someone with that statement. Fuck you those that are offended. I don't give a fuck", text_wrap_width);
       l.makeText(c, UIAction.increment, "Some more standard placeholder text that isn't some weird loremm ipsum shit that everyone is tired of.", text_wrap_width);
       l.makeButton(c, UIAction.toggle_window_1, "Toggle window 1");
 

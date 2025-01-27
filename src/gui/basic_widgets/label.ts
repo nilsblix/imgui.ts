@@ -38,13 +38,13 @@ export class Label<ActionType> implements Widget<ActionType> {
     c.textAlign = "center";
 
     const x = (this.bbox.left + this.bbox.right) / 2;
-    const y = (this.bbox.top + this.bbox.bottom) / 2 - MBBox.calcHeight(this.bbox) / 4;
+    const y = (this.bbox.top + this.bbox.bottom) / 2;
     c.fillText(this.text, x, y);
 
-    // TEMP DEBUG
-    // c.strokeStyle = MColor.string(MColor.white);
-    // c.lineWidth = 1;
-    // c.strokeRect(this.bbox.left, this.bbox.top, MBBox.calcWidth(this.bbox), MBBox.calcHeight(this.bbox));
+    //TEMP DEBUG
+    //c.strokeStyle = MColor.string(MColor.white);
+    //c.lineWidth = 1;
+    //c.strokeRect(this.bbox.left, this.bbox.top, MBBox.calcWidth(this.bbox), MBBox.calcHeight(this.bbox));
 
   }
 
