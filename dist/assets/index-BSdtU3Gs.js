@@ -3,7 +3,7 @@ var at=Object.defineProperty;var ct=(f,t,o)=>t in f?at(f,t,{enumerable:!0,config
     font-family: "Hack Regular";
     font-style: normal;
     font-weight: normal;
-    src: local("Hack Regular"), url("../hack-webfont/Hack-Regular.woff") format("woff");
+    src: local("Hack Regular"), url("public/hack-webfont/Hack-Regular.woff") format("woff");
     }
     
 
