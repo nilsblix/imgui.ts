@@ -9,7 +9,7 @@ css_style.appendChild(document.createTextNode(`
     font-family: "Hack Regular";
     font-style: normal;
     font-weight: normal;
-    src: local("Hack Regular"), url("../../hack-webfont/Hack-Regular.woff") format("woff");
+    src: local("Hack Regular"), url("/hack-webfont/Hack-Regular.woff") format("woff");
     }
     
 
@@ -25,7 +25,7 @@ css_style.appendChild(document.createTextNode(`
     font-family: "Hack Bold";
     font-style: normal;
     font-weight: normal;
-    src: local("Hack Bold"), url("../../public/hack-webfont/Hack-Bold.woff") format("woff");
+    src: local("Hack Bold"), url("/hack-webfont/Hack-Bold.woff") format("woff");
     }
     
 
@@ -33,7 +33,7 @@ css_style.appendChild(document.createTextNode(`
     font-family: "Hack Bold Italic";
     font-style: normal;
     font-weight: normal;
-    src: local("Hack Bold Italic"), url("../../public/hack-webfont/Hack-BoldItalic.woff") format("woff");
+    src: local("Hack Bold Italic"), url("/hack-webfont/Hack-BoldItalic.woff") format("woff");
     }`
 ));
 document.head.appendChild(css_style);
@@ -260,13 +260,8 @@ export type Widget<ActionType> = {
   };
 };
 
-console.log(MColor.string({ r: 0.4, g: 0.38, b: 0.44, a: 1.0 }));
-
 export class GlobalStyle {
-  //static font = "ProggyCleanTT";
-  // static font = "Martian Mono";
   static font = "Hack Regular";
-  //static font = "Courier New";
   static widget = {
     // DEAR IMGUI
     //default_bg_color: "#294A7AFF",
