@@ -9,7 +9,7 @@ css_style.appendChild(document.createTextNode(`
     font-family: "Hack Regular";
     font-style: normal;
     font-weight: normal;
-    src: local("Hack Regular"), url("../../public/hack-webfont/Hack-Regular.woff") format("woff");
+    src: local("Hack Regular"), url("../../hack-webfont/Hack-Regular.woff") format("woff");
     }
     
 
@@ -17,7 +17,7 @@ css_style.appendChild(document.createTextNode(`
     font-family: "Hack Italic";
     font-style: normal;
     font-weight: normal;
-    src: local("Hack Italic"), url("../../public/hack-webfont/Hack-Italic.woff") format("woff");
+    src: local("Hack Italic"), url("/hack-webfont/Hack-Italic.woff") format("woff");
     }
     
 
@@ -267,7 +267,6 @@ export class GlobalStyle {
   // static font = "Martian Mono";
   static font = "Hack Regular";
   //static font = "Courier New";
-  private static default: "#666170FF";
   static widget = {
     // DEAR IMGUI
     //default_bg_color: "#294A7AFF",
@@ -440,5 +439,5 @@ export class InputState {
   }
 }
 
+export const c = <REND>canvas.getContext("2d");
 export const input_state = new InputState(canvas, 0, 0);
-
