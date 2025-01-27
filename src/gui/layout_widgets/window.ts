@@ -20,7 +20,7 @@ class Header<ActionType> implements Widget<ActionType> {
       left: x,
       top: y,
       right: x + width,
-      bottom: y + GlobalStyle.header_commons.font_size,
+      bottom: y + 1.4 * GlobalStyle.header_commons.font_size,
     }
     this.loc = loc;
     this.widgets = [];

@@ -3,7 +3,7 @@ import { Stack } from "./stack.ts";
 export { Stack };
 
 const css_style = document.createElement("style");
-css_style.type = "test/css";
+css_style.type = "text/css";
 css_style.appendChild(document.createTextNode(`
     @font-face {
     font-family: "Hack Regular";
@@ -265,17 +265,17 @@ export class GlobalStyle {
     down_bg_color: "#0F87FAFF",
   };
   static label = {
-    font_size: 40,
+    font_size: 12,
     default_font_color: MColor.white,
     inactive_font_color: MColor.fromHex("#808080FF"),
   };
   static text = {
-    font_size: 16,
-    text_height_mult: 1.2,
+    font_size: 12,
+    text_height_mult: 1.5,
   };
   static button = {
     padding: 3,
-    font_size: 16,
+    font_size: 12,
   };
   static layout_commons = {
     padding: 10,
@@ -287,7 +287,7 @@ export class GlobalStyle {
   static header_commons = {
     color: "#ffffff",
     bg_color: "#294A7AFF",
-    font_size: 16,
+    font_size: 12,
   };
   static window = {
     minimized_header_bg: "#9F9F9F09",

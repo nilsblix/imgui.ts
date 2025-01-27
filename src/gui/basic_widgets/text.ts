@@ -38,7 +38,7 @@ export class Text<ActionType> implements Widget<ActionType> {
     }
 
     // Calculate bounding box based on wrapped lines
-    const line_height = this.text_size * GlobalStyle.text.text_height_mult; // Adjust line height as needed
+    const line_height = this.text_size * GlobalStyle.text.text_height_mult;
     const height = this.wrapped_lines.length * line_height;
     this.bbox = { left: cursor.x, top: cursor.y, right: cursor.x + width, bottom: cursor.y + height };
   }

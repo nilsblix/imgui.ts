@@ -48,7 +48,7 @@ export class Draggable<ActionType> implements Widget<ActionType> {
     c.textAlign = "center";
 
     const x = Math.round((this.bbox.left + this.bbox.right) / 2) + 0.5;
-    const y = Math.round((this.bbox.top + this.bbox.bottom) / 2);
+    const y = Math.round((this.bbox.top + this.bbox.bottom) / 2) + 1;
     c.fillText(this.text, x, y);
 
   }
