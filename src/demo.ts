@@ -38,8 +38,6 @@ let bg_color: gui.Color = gui.MColor.fromHex("#738C99");
 function update() {
   document.body.style.backgroundColor = gui.MColor.string(bg_color);
 
-  let real_color_picker_glob = null;
-
   const st = performance.now();
 
   gui.updateCanvasSizing();
@@ -64,7 +62,7 @@ function update() {
   const picker_wind = stack.makeWindow(c, input_state, { window: UIAction.placeholder, header: UIAction.placeholder, resizeable: null, close_btn: null }, { title: "color picker test", width: 300, height: 380, x: 800, y: 100 });
 
   const picker_wind_usable_width = gui.MBBox.calcWidth(picker_wind.bbox) - 2 * gui.GlobalStyle.layout_commons.padding - 2 * gui.GlobalStyle.layout_commons.widget_gap;
-  const bg_color_picker = picker_wind.makeColorPickerRect(UIAction.change_bg_color_with_picker, gui.MColor.fromHex(gui.GlobalStyle.widget.default_bg_color), picker_wind_usable_width + 2 * gui.GlobalStyle.layout_commons.widget_gap, 300);
+  picker_wind.makeColorPickerRect(UIAction.change_bg_color_with_picker, gui.MColor.fromHex(gui.GlobalStyle.widget.default_bg_color), picker_wind_usable_width + 2 * gui.GlobalStyle.layout_commons.widget_gap, 300);
 
   const hsv_h = picker_wind.makeDraggable(c, UIAction.change_bg_color_hue, "H: " + Math.round(gui.MColor.toHSVA(bg_color).h), { width: 1 / 3 * picker_wind_usable_width });
   picker_wind.cursor.x = hsv_h.bbox.right + gui.GlobalStyle.layout_commons.widget_gap;
@@ -150,7 +148,7 @@ function update() {
       l.makeLabel(c, null, "some right text");
       l.makeButton(c, UIAction.increment, "Increment", { width: 100, height: 50 });
       l.makeButton(c, UIAction.decrement, "Decrement");
-      real_color_picker_glob = l.makeColorPickerRect(UIAction.change_bg_color_real_width_picker, bg_color, col_width, col_width);
+      l.makeColorPickerRect(UIAction.change_bg_color_real_width_picker, bg_color, col_width, col_width);
       l.makeText(c, null, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", col_width - 10);
     }
   }
@@ -201,8 +199,8 @@ function update() {
       input_state.window_active[2] = !input_state.window_active[2];
       break;
     case UIAction.change_bg_color_with_picker:
-      // bg_color = bg_color_picker.color;
-      gui.GlobalStyle.widget.default_bg_color = gui.MColor.toHex(bg_color_picker.color);
+      if (gui.MColor.isColor(input_state.action_ret_var))
+        gui.GlobalStyle.widget.default_bg_color = gui.MColor.toHex(input_state.action_ret_var);
       break;
     case UIAction.change_bg_color_hue:
       let { h: h1, s: s1, v: v1, a: a1 } = gui.MColor.toHSVA(bg_color);
@@ -229,8 +227,8 @@ function update() {
       bg_color.b = gui.updateDraggableValue(bg_color.b, input_state, 1.0, { min: 0, max: 255 });
       break;
     case UIAction.change_bg_color_real_width_picker:
-      if (real_color_picker_glob != null)
-        bg_color = real_color_picker_glob.color;
+      if (gui.MColor.isColor(input_state.action_ret_var))
+        bg_color = input_state.action_ret_var;
   }
 
   const rst = performance.now();

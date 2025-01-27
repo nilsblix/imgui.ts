@@ -9,7 +9,7 @@ export class Stack<ActionType> { // root
   widgets: Widget<ActionType>[]; // is actually layouts
 
   constructor() {
-    this.bbox = {left: 0, right: 0, top: 0, bottom: 0};
+    this.bbox = { left: 0, right: 0, top: 0, bottom: 0 };
     this.widgets = [];
   }
 
@@ -54,7 +54,7 @@ export class Stack<ActionType> { // root
       input_state.window_order.unshift(idx);
     }
 
-    const wind = new Window<ActionType>(c, action_config.window, action_config.header, action_config.resizeable, action_config.close_btn, [idx], input_state.window_positions[idx].x, input_state.window_positions[idx].y, input_state.window_sizes[idx].width, input_state.window_sizes[idx].height, config.title ?? "Hello, World!", {width: config.min_width ?? 50, height: config.min_height ?? 20});
+    const wind = new Window<ActionType>(c, action_config.window, action_config.header, action_config.resizeable, action_config.close_btn, [idx], input_state.window_positions[idx].x, input_state.window_positions[idx].y, input_state.window_sizes[idx].width, input_state.window_sizes[idx].height, config.title ?? "Hello, World!", { width: config.min_width ?? 50, height: config.min_height ?? 20 });
     this.widgets.push(wind);
 
     return wind;

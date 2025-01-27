@@ -55,7 +55,8 @@ export class ColorPickerRect<ActionType> implements Widget<ActionType> {
   }
 
   /**
-  * Will not really return anything. Will however change its internal color ==> If you want to access its color, do *ColorPickerRect.color*
+   * The color that is going to be changed will be stored inside input_state.action_ret_var
+   *
   */
   requestAction(input_state: InputState): { wants_focus: boolean, action: N<ActionType> } {
     if (this.action_type == null)
@@ -93,6 +94,7 @@ export class ColorPickerRect<ActionType> implements Widget<ActionType> {
       }
       this.color = new_color;
 
+      input_state.action_ret_var = this.color;
       return { wants_focus: true, action: this.action_type };
     }
 

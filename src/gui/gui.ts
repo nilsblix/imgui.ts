@@ -105,6 +105,12 @@ export class MColor {
 
   private static EPS_DECIMALS = 6;
 
+  static isColor(x: any) {
+    if (typeof x == typeof MColor.white)
+      return true;
+    return false;
+  }
+
   static string(color: Color): string {
     return `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`;
   }
@@ -254,16 +260,23 @@ export type Widget<ActionType> = {
   };
 };
 
+console.log(MColor.string({ r: 0.4, g: 0.38, b: 0.44, a: 1.0 }));
+
 export class GlobalStyle {
   //static font = "ProggyCleanTT";
   // static font = "Martian Mono";
   static font = "Hack Regular";
   //static font = "Courier New";
+  private static default: "#666170FF";
   static widget = {
-    default_bg_color: "#294A7AFF",
-    hover_bg_color: "#4296FAFF",
-    down_bg_color: "#0F87FAFF",
-  };
+    // DEAR IMGUI
+    //default_bg_color: "#294A7AFF",
+    //hover_bg_color: "#4296FAFF",
+    //down_bg_color: "#0F87FAFF",
+    default_bg_color: "#666170FF",
+    hover_bg_color: "#9992A8FF",
+    down_bg_color: "#CCC2E0FF",
+  }
   static label = {
     font_size: 12,
     default_font_color: MColor.white,
@@ -286,7 +299,8 @@ export class GlobalStyle {
   };
   static header_commons = {
     color: "#ffffff",
-    bg_color: "#294A7AFF",
+    //bg_color: "#294A7AFF",
+    bg_color: "#4b4654",
     font_size: 12,
   };
   static window = {
@@ -322,6 +336,8 @@ export class InputState {
 
   active_widget_loc: number[];
 
+  action_ret_var: any;
+
   private last_click_time: number;
   private double_click_threshold: number;
 
@@ -352,6 +368,8 @@ export class InputState {
 
     this.last_click_time = -1;
     this.double_click_threshold = 300; // Double-click threshold in milliseconds
+
+    this.action_ret_var = undefined;
 
     canvas.addEventListener("mousemove", (e) => {
       const rect = canvas.getBoundingClientRect();
@@ -421,3 +439,6 @@ export class InputState {
     this.mouse_frame.double_clicked = false;
   }
 }
+
+export const input_state = new InputState(canvas, 0, 0);
+

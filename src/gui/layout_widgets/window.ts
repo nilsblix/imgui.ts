@@ -80,14 +80,13 @@ class CloseButton<ActionType> extends Button<ActionType> implements Widget<Actio
 
     const x = (this.bbox.left + this.bbox.right) / 2;
     let y = (this.bbox.top + this.bbox.bottom) / 2;
+    y += GlobalStyle.button.font_size * 0.1;
 
     c.fillStyle = color;
     c.beginPath();
     c.arc(x, y, 0.5 * GlobalStyle.button.font_size, 0, 2 * Math.PI);
     c.fill();
     c.closePath();
-
-    y -= GlobalStyle.button.font_size * 0.35;
 
     c.font = `normal ${1.25 * GlobalStyle.button.font_size}px ${GlobalStyle.font}`;
     c.fillStyle = MColor.string(MColor.white);
