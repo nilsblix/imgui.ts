@@ -42,8 +42,8 @@ export const canvas = document.createElement("canvas");
 canvas.id = "nvb-imgui-canvas";
 document.body.appendChild(canvas);
 canvas.style.position = "absolute";
-canvas.style.top = "0 px";
-canvas.style.left = "0 px";
+canvas.style.top = "0px";
+canvas.style.left = "0px";
 export function updateCanvasSizing() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -317,6 +317,7 @@ export class InputState {
     double_clicked: boolean;
     released: boolean;
   };
+  delta_mouse_scroll = { x: 0, y: 0 };
 
   moving_window: boolean;
   resizing_window: boolean;
@@ -348,6 +349,7 @@ export class InputState {
       double_clicked: false,
       released: false,
     };
+    this.delta_mouse_scroll = { x: 0, y: 0 };
 
     this.moving_window = false;
     this.resizing_window = false;
@@ -404,6 +406,11 @@ export class InputState {
       this.mouse_frame.released = true;
       this.mouse_down = false;
     });
+
+    canvas.addEventListener("wheel", (e) => {
+      this.delta_mouse_scroll.x = e.deltaX;
+      this.delta_mouse_scroll.y = e.deltaY;
+    });
   }
 
   end() {
@@ -431,6 +438,9 @@ export class InputState {
     this.mouse_frame.clicked = false;
     this.mouse_frame.released = false;
     this.mouse_frame.double_clicked = false;
+
+    this.delta_mouse_scroll.x = 0;
+    this.delta_mouse_scroll.y = 0;
   }
 }
 

@@ -24,6 +24,10 @@ export abstract class Layout<ActionType> implements Widget<ActionType> {
 
   abstract updateBBox(widget: Widget<ActionType>): void;
 
+  getInnerWidth(): number {
+    return MBBox.calcWidth(this.bbox) - 2 * GlobalStyle.layout_commons.padding;
+  }
+
   pushWidget(widget: Widget<ActionType>) {
     this.widgets.push(widget);
   }
