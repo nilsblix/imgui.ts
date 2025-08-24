@@ -39,7 +39,7 @@ css_style.appendChild(document.createTextNode(`
 document.head.appendChild(css_style);
 
 export const canvas = document.createElement("canvas");
-canvas.id = "nvb-imgui-canvas";
+canvas.id = "imgui.ts-canvas";
 document.body.appendChild(canvas);
 canvas.style.position = "absolute";
 canvas.style.top = "0px";
